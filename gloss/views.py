@@ -227,7 +227,7 @@ def get_matches_for_term(term):
     like_terms = [entry.term for entry in like_matches]
 
     # get TSV matches for the term
-    tsv_matches = db.session.query('term').from_statement(sql.text(
+    tsv_matches = db.session.query(Definition).from_statement(sql.text(
         '''SELECT * FROM definitions WHERE tsv_search @@ plainto_tsquery(:term) ORDER BY ts_rank(tsv_search, plainto_tsquery(:term)) DESC;'''
     )).params(term=stripped_term)
     tsv_terms = [entry[0] for entry in tsv_matches]

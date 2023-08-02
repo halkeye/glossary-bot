@@ -1,10 +1,10 @@
-# from . import views, errors
 from flask import Blueprint, Flask
 from flask_sqlalchemy import SQLAlchemy
 
+__all__ = ["views", "errors", "models"]
+
 gloss = Blueprint('gloss', __name__)
 db = SQLAlchemy()
-
 
 def create_app(environ):
     app = Flask(__name__)
@@ -22,5 +22,8 @@ def create_app(environ):
 
     db.init_app(app)
 
-    app.register_blueprint(gloss)
+    from . import views, errors # noqa # pylint: disable=unused-import
+
+    app.register_blueprint(gloss, url_prefix='/')
+
     return app

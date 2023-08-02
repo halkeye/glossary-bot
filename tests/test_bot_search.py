@@ -16,6 +16,7 @@ class TestBotSearch(TestBase):
         # run the database migrations
         Migrate(self.app, self.db)
         upgrade()
+        self.db.create_all()
 
     def tearDown(self):
         super(TestBotSearch, self).tearDown()
@@ -64,20 +65,20 @@ class TestBotSearch(TestBase):
 
         # make some searchs and verify that they come back as expected
         robo_response = self.post_command(text="search youth")
-        self.assertTrue('found *youth* in: *ACYF*, *TAY*'.encode('utf-8') in robo_response.data)
+        self.assertIn('found *youth* in: *ACYF*, *TAY*'.encode('utf-8'), robo_response.data)
 
         robo_response = self.post_command(text="search saws")
-        self.assertTrue('found *saws* in: *SAWS*, *CalWIN*'.encode('utf-8') in robo_response.data)
+        self.assertIn('found *saws* in: *SAWS*, *CalWIN*'.encode('utf-8'), robo_response.data)
 
         robo_response = self.post_command(text="search calwin")
-        self.assertTrue('found *calwin* in: *CalWIN*, *SAWS*'.encode('utf-8') in robo_response.data)
+        self.assertIn('found *calwin* in: *CalWIN*, *SAWS*'.encode('utf-8'), robo_response.data)
 
         robo_response = self.post_command(text="search state")
-        self.assertTrue('*TAY*'.encode('utf-8') in robo_response.data)
-        self.assertTrue('*WIB*'.encode('utf-8') in robo_response.data)
+        self.assertIn('*TAY*'.encode('utf-8'), robo_response.data)
+        self.assertIn('*WIB*'.encode('utf-8'), robo_response.data)
 
         robo_response = self.post_command(text="search banana")
-        self.assertTrue('could not find *banana* in any terms or definitions.'.encode('utf-8') in robo_response.data)
+        self.assertIn('could not find *banana* in any terms or definitions.'.encode('utf-8'), robo_response.data)
 
 if __name__ == '__main__':
     unittest.main()

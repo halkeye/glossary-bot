@@ -24,8 +24,7 @@ class TestBase(unittest.TestCase):
     def tearDown(self):
         self.db.session.close()
         self.db.drop_all()
-        # drop_all doesn't drop the alembic_version table
-        self.db.session.execute('DROP TABLE IF EXISTS alembic_version')
+        self.db.session.remove()
         self.db.session.commit()
         self.app_context.pop()
 
