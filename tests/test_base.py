@@ -4,12 +4,12 @@ import unittest
 from os import environ
 from gloss import create_app, db
 
+
 class TestBase(unittest.TestCase):
-    ''' A base class for bot tests.
-    '''
+    ''' A base class for bot tests.'''
 
     def setUp(self):
-        environ['DATABASE_URL'] = 'postgresql:///glossary-bot-test'
+        environ['DATABASE_URL'] = environ['TEST_DATABASE_URL'] or 'postgresql:///glossary-bot-test'
         environ['SLACK_TOKEN'] = 'meowser_token'
         environ['SLACK_WEBHOOK_URL'] = 'http://hooks.example.com/services/HELLO/LOVELY/WORLD'
 
