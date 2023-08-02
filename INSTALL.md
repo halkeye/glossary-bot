@@ -52,13 +52,13 @@ and make sure that the value of `DATABASE_URL` in `.env` matches the name of the
 Initialize the database:
 
 ```
-python manage.py db upgrade
+flask db upgrade
 ```
 
 And run the application:
 
 ```
-python manage.py runserver
+flask run
 ```
 
 #### Test
