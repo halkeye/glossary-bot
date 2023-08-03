@@ -208,7 +208,7 @@ def log_query(term, user_name, action):
     try:
         db.session.add(Interaction(term=term, user_name=user_name, action=action))
         db.session.commit()
-    except:
+    except Exception:
         pass
 
 def query_definition(term):

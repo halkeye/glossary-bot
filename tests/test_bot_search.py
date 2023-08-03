@@ -72,7 +72,7 @@ class TestBotSearch(TestBase):
         randomized_matches = list(matches)
         random.shuffle(randomized_matches)
         for post_match in randomized_matches:
-            resp = self.post_command(
+            self.post_command(
                 text="{} = {}".format(post_match[0], post_match[1]))
 
         # make some searchs and verify that they come back as expected
