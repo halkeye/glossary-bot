@@ -3,20 +3,30 @@
 import unittest
 import logging
 import random
-from flask_migrate import upgrade
-from flask_migrate import Migrate
+from flask_migrate import Migrate, upgrade
 from tests.test_base import TestBase
+from sqlalchemy import sql
 
 class TestBotSearch(TestBase):
 
     def setUp(self):
         super(TestBotSearch, self).setUp()
+
+        self.db.session.close()
+        self.db.drop_all()
+        self.db.session.remove()
+        self.db.session.commit()
+
+        self.db.session.execute(sql.text('DROP TABLE IF EXISTS alembic_version'))
+        self.db.session.commit()
+
         # suppress logging
         logging.disable(logging.CRITICAL)
         # run the database migrations
-        Migrate(self.app, self.db)
-        upgrade()
-        self.db.create_all()
+        self.app.config['TESTING'] = True
+        with self.app.app_context():
+            Migrate(self.app, self.db)
+            upgrade()
 
     def tearDown(self):
         super(TestBotSearch, self).tearDown()
@@ -39,7 +49,8 @@ class TestBotSearch(TestBase):
         randomized_matches = list(matches)
         random.shuffle(randomized_matches)
         for post_match in randomized_matches:
-            self.post_command(text="{} = {}".format(post_match[0], post_match[1]))
+            self.post_command(text="{} = {}".format(
+                post_match[0], post_match[1]))
 
         # request a definition that doesn't exist, but that will generate suggestions
         robo_response = self.post_command(text="shh gloss")
@@ -61,24 +72,30 @@ class TestBotSearch(TestBase):
         randomized_matches = list(matches)
         random.shuffle(randomized_matches)
         for post_match in randomized_matches:
-            self.post_command(text="{} = {}".format(post_match[0], post_match[1]))
+            resp = self.post_command(
+                text="{} = {}".format(post_match[0], post_match[1]))
 
         # make some searchs and verify that they come back as expected
         robo_response = self.post_command(text="search youth")
-        self.assertIn('found *youth* in: *ACYF*, *TAY*'.encode('utf-8'), robo_response.data)
+        self.assertIn(
+            'found *youth* in: *ACYF*, *TAY*'.encode('utf-8'), robo_response.data)
 
         robo_response = self.post_command(text="search saws")
-        self.assertIn('found *saws* in: *SAWS*, *CalWIN*'.encode('utf-8'), robo_response.data)
+        self.assertIn(
+            'found *saws* in: *SAWS*, *CalWIN*'.encode('utf-8'), robo_response.data)
 
         robo_response = self.post_command(text="search calwin")
-        self.assertIn('found *calwin* in: *CalWIN*, *SAWS*'.encode('utf-8'), robo_response.data)
+        self.assertIn(
+            'found *calwin* in: *CalWIN*, *SAWS*'.encode('utf-8'), robo_response.data)
 
         robo_response = self.post_command(text="search state")
         self.assertIn('*TAY*'.encode('utf-8'), robo_response.data)
         self.assertIn('*WIB*'.encode('utf-8'), robo_response.data)
 
         robo_response = self.post_command(text="search banana")
-        self.assertIn('could not find *banana* in any terms or definitions.'.encode('utf-8'), robo_response.data)
+        self.assertIn(
+            'could not find *banana* in any terms or definitions.'.encode('utf-8'), robo_response.data)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -229,8 +229,8 @@ def get_matches_for_term(term):
     # get TSV matches for the term
     tsv_matches = db.session.query(Definition).from_statement(sql.text(
         '''SELECT * FROM definitions WHERE tsv_search @@ plainto_tsquery(:term) ORDER BY ts_rank(tsv_search, plainto_tsquery(:term)) DESC;'''
-    )).params(term=stripped_term)
-    tsv_terms = [entry[0] for entry in tsv_matches]
+    )).params(term=stripped_term).all()
+    tsv_terms = [entry.term for entry in tsv_matches]
 
     # put ilike matches that aren't in the TSV list at the front
     match_terms = list(tsv_terms)
@@ -386,7 +386,7 @@ def index():
     #
 
     # if the text is a single word that's not a single-word command, treat it as a get
-    if command_text.count(" ") is 0 and len(command_text) > 0 and \
+    if command_text.count(" ") == 0 and len(command_text) > 0 and \
        command_text.lower() not in STATS_CMDS + RECENT_CMDS + HELP_CMDS + SET_CMDS:
         return query_definition_and_get_response(slash_command, command_text, user_name, channel_id, False)
 
