@@ -1,6 +1,5 @@
 from flask import abort, current_app, request
 from . import gloss as app
-from . import db
 from .models import Definition, Interaction
 from sqlalchemy import func, distinct, sql
 from requests import post
@@ -18,60 +17,7 @@ SEARCH_CMDS = ("search",)
 
 ALIAS_KEYWORDS = ("see also", "see")
 
-BOT_NAME = "Gloss Bot"
 BOT_EMOJI = ":lipstick:"
-
-'''
-values posted by Slack:
-    token: the authenticaton token from Slack; available in the integration settings.
-    team_domain: the name of the team (i.e. what shows up in the URL: {xxx}.slack.com)
-    team_id: unique ID for the team
-    channel_name: the name of the channel the message was sent from
-    channel_id: unique ID for the channel the message was sent from
-    user_name: the name of the user that sent the message
-    user_id: unique ID for the user that sent the message
-    command: the command that was used to generate the request (like '/gloss')
-    text: the text that was sent along with the command (like everything after '/gloss ')
-'''
-
-def get_payload_values(channel_id="", text=None):
-    ''' Get a dict describing a standard webhook
-    '''
-    payload_values = {}
-    payload_values['channel'] = channel_id
-    payload_values['text'] = text
-    payload_values['username'] = BOT_NAME
-    payload_values['icon_emoji'] = BOT_EMOJI
-    return payload_values
-
-def send_webhook_with_attachment(channel_id="", text=None, fallback="", pretext="", title="", color="#f33373", image_url=None, mrkdwn_in=[]):
-    ''' Send a webhook with an attachment, for a more richly-formatted message.
-        see https://api.slack.com/docs/attachments
-    '''
-    # don't send empty messages
-    if not text:
-        return
-
-    # get the standard payload dict
-    # :NOTE: sending text defined as 'pretext' to the standard payload and leaving
-    #        'pretext' in the attachment empty so that I can use markdown styling.
-    payload_values = get_payload_values(channel_id=channel_id, text=pretext)
-    # build the attachment dict
-    attachment_values = {}
-    attachment_values['fallback'] = fallback
-    attachment_values['pretext'] = None
-    attachment_values['title'] = title
-    attachment_values['text'] = text
-    attachment_values['color'] = color
-    attachment_values['image_url'] = image_url
-    if len(mrkdwn_in):
-        attachment_values['mrkdwn_in'] = mrkdwn_in
-    # add the attachment dict to the payload and jsonify it
-    payload_values['attachments'] = [attachment_values]
-    payload = json.dumps(payload_values)
-
-    # return the response
-    return post(current_app.config['SLACK_WEBHOOK_URL'], data=payload)
 
 def get_image_url(text):
     ''' Extract an image url from the passed text. If there are multiple image urls,
@@ -118,62 +64,6 @@ def verify_image_url(text):
     '''
     return (re.match('http', text) and re.search(r'[gif|jpg|jpeg|png|bmp]$', text))
 
-def get_stats():
-    ''' Gather and return some statistics
-    '''
-    entries = db.session.query(func.count(Definition.term)).scalar()
-    definers = db.session.query(func.count(distinct(Definition.user_name))).scalar()
-    queries = db.session.query(func.count(Interaction.action)).scalar()
-    outputs = (
-        ("I have definitions for", entries, "term", "terms", "I don't have any definitions"),
-        ("", definers, "person has defined terms", "people have defined terms", "Nobody has defined terms"),
-        ("I've been asked for definitions", queries, "time", "times", "Nobody has asked me for definitions")
-    )
-    lines = []
-    for prefix, period, singular, plural, empty_line in outputs:
-        if period:
-            lines.append("{}{} {}".format("{} ".format(prefix) if prefix else "", period, singular if period == 1 else plural))
-        else:
-            lines.append(empty_line)
-    # return the message
-    return "\n".join(lines)
-
-def get_learnings(how_many=12, sort_order="recent", offset=0):
-    ''' Gather and return some recent definitions
-    '''
-    order_descending = Definition.creation_date.desc()
-    order_random = func.random()
-    order_alphabetical = Definition.term
-    order_function = order_descending
-    prefix_singluar = "I recently learned the definition for"
-    prefix_plural = "I recently learned definitions for"
-    no_definitions_text = "I haven't learned any definitions yet."
-    if sort_order == "random":
-        order_function = order_random
-    elif sort_order == "alpha":
-        order_function = order_alphabetical
-
-    if sort_order == "random" or sort_order == "alpha" or offset > 0:
-        prefix_singluar = "I know the definition for"
-        prefix_plural = "I know definitions for"
-
-    # if how_many is 0, ignore offset and return all results
-    if how_many == 0:
-        definitions = db.session.query(Definition).order_by(order_function).all()
-    # if order is random and there is an offset, randomize the results after the query
-    elif sort_order == "random" and offset > 0:
-        definitions = db.session.query(Definition).order_by(order_descending).limit(how_many).offset(offset).all()
-        random.shuffle(definitions)
-    else:
-        definitions = db.session.query(Definition).order_by(order_function).limit(how_many).offset(offset).all()
-
-    if not definitions:
-        return no_definitions_text, no_definitions_text
-
-    wording = prefix_plural if len(definitions) > 1 else prefix_singluar
-    plain_text = "{}: {}".format(wording, ', '.join([item.term for item in definitions]))
-    rich_text = "{}: {}".format(wording, ', '.join([make_bold(item.term) for item in definitions]))
-    return plain_text, rich_text
 
 def parse_learnings_params(command_params):
     ''' Parse the passed learnings command params
@@ -202,44 +92,6 @@ def parse_learnings_params(command_params):
 
     return recent_args
 
-def log_query(term, user_name, action):
-    ''' Log a query into the interactions table
-    '''
-    try:
-        db.session.add(Interaction(term=term, user_name=user_name, action=action))
-        db.session.commit()
-    except Exception:
-        pass
-
-def query_definition(term):
-    ''' Query the definition for a term from the database
-    '''
-    return Definition.query.filter(func.lower(Definition.term) == func.lower(term)).first()
-
-def get_matches_for_term(term):
-    ''' Search the glossary for entries that are matches for the passed term.
-    '''
-    # strip pattern-matching metacharacters from the term
-    stripped_term = re.sub(r'\||_|%|\*|\+|\?|\{|\}|\(|\)|\[|\]', '', term)
-    # get ILIKE matches for the term
-    # in SQL: SELECT term FROM definitions WHERE term ILIKE '%{}%'.format(stripped_term);
-    like_matches = Definition.query.filter(Definition.term.ilike("%{}%".format(stripped_term)))
-    like_terms = [entry.term for entry in like_matches]
-
-    # get TSV matches for the term
-    tsv_matches = db.session.query(Definition).from_statement(sql.text(
-        '''SELECT * FROM definitions WHERE tsv_search @@ plainto_tsquery(:term) ORDER BY ts_rank(tsv_search, plainto_tsquery(:term)) DESC;'''
-    )).params(term=stripped_term).all()
-    tsv_terms = [entry.term for entry in tsv_matches]
-
-    # put ilike matches that aren't in the TSV list at the front
-    match_terms = list(tsv_terms)
-    for check_term in like_terms:
-        if check_term not in tsv_terms:
-            match_terms.insert(0, check_term)
-
-    return match_terms
-
 def get_command_action_and_params(command_text):
     ''' Parse the passed string for a command action and parameters
     '''
@@ -258,233 +110,250 @@ def check_definition_for_alias(definition):
 
     return None
 
-def query_definition_and_get_response(slash_command, command_text, user_name, channel_id, private_response):
-    ''' Get the definition for the passed term and return the appropriate responses
-    '''
-    # query the definition
-    entry = query_definition(command_text)
-    if not entry:
+class Bot:
+    def __init__(self, session, bot_name):
+        self.session = session
+        self.bot_name = bot_name
+
+    def get_payload_values(self, channel_id="", text=None):
+        ''' Get a dict describing a standard webhook
+        '''
+        payload_values = {}
+        payload_values['channel'] = channel_id
+        payload_values['text'] = text
+        payload_values['username'] = self.bot_name
+        payload_values['icon_emoji'] = BOT_EMOJI
+        return payload_values
+
+    def send_webhook_with_attachment(self, channel_id="", text=None, fallback="", pretext="", title="", color="#f33373", image_url=None, mrkdwn_in=[]):
+        ''' Send a webhook with an attachment, for a more richly-formatted message.
+            see https://api.slack.com/docs/attachments
+        '''
+        # don't send empty messages
+        if not text:
+            return
+
+        # get the standard payload dict
+        # :NOTE: sending text defined as 'pretext' to the standard payload and leaving
+        #        'pretext' in the attachment empty so that I can use markdown styling.
+        payload_values = get_payload_values(channel_id=channel_id, text=pretext)
+        # build the attachment dict
+        attachment_values = {}
+        attachment_values['fallback'] = fallback
+        attachment_values['pretext'] = None
+        attachment_values['title'] = title
+        attachment_values['text'] = text
+        attachment_values['color'] = color
+        attachment_values['image_url'] = image_url
+        if len(mrkdwn_in):
+            attachment_values['mrkdwn_in'] = mrkdwn_in
+        # add the attachment dict to the payload and jsonify it
+        payload_values['attachments'] = [attachment_values]
+        payload = json.dumps(payload_values)
+
+        # return the response
+        return post(current_app.config['SLACK_WEBHOOK_URL'], data=payload)
+
+    def get_stats(self):
+        ''' Gather and return some statistics
+        '''
+        entries = self.session.query(func.count(Definition.term)).scalar()
+        definers = self.session.query(func.count(distinct(Definition.user_name))).scalar()
+        queries = self.session.query(func.count(Interaction.action)).scalar()
+        outputs = (
+            ("I have definitions for", entries, "term", "terms", "I don't have any definitions"),
+            ("", definers, "person has defined terms", "people have defined terms", "Nobody has defined terms"),
+            ("I've been asked for definitions", queries, "time", "times", "Nobody has asked me for definitions")
+        )
+        lines = []
+        for prefix, period, singular, plural, empty_line in outputs:
+            if period:
+                lines.append("{}{} {}".format("{} ".format(prefix) if prefix else "", period, singular if period == 1 else plural))
+            else:
+                lines.append(empty_line)
+        # return the message
+        return "\n".join(lines)
+
+    def get_learnings(self, how_many=12, sort_order="recent", offset=0):
+        ''' Gather and return some recent definitions
+        '''
+        order_descending = Definition.creation_date.desc()
+        order_random = func.random()
+        order_alphabetical = Definition.term
+        order_function = order_descending
+        prefix_singluar = "I recently learned the definition for"
+        prefix_plural = "I recently learned definitions for"
+        no_definitions_text = "I haven't learned any definitions yet."
+        if sort_order == "random":
+            order_function = order_random
+        elif sort_order == "alpha":
+            order_function = order_alphabetical
+
+        if sort_order == "random" or sort_order == "alpha" or offset > 0:
+            prefix_singluar = "I know the definition for"
+            prefix_plural = "I know definitions for"
+
+        # if how_many is 0, ignore offset and return all results
+        if how_many == 0:
+            definitions = self.session.query(Definition).order_by(order_function).all()
+        # if order is random and there is an offset, randomize the results after the query
+        elif sort_order == "random" and offset > 0:
+            definitions = self.session.query(Definition).order_by(order_descending).limit(how_many).offset(offset).all()
+            random.shuffle(definitions)
+        else:
+            definitions = self.session.query(Definition).order_by(order_function).limit(how_many).offset(offset).all()
+
+        if not definitions:
+            return no_definitions_text, no_definitions_text
+
+        wording = prefix_plural if len(definitions) > 1 else prefix_singluar
+        plain_text = "{}: {}".format(wording, ', '.join([item.term for item in definitions]))
+        rich_text = "{}: {}".format(wording, ', '.join([make_bold(item.term) for item in definitions]))
+        return plain_text, rich_text
+
+    def log_query(self, term, user_name, action):
+        ''' Log a query into the interactions table
+        '''
+        try:
+            self.session.add(Interaction(term=term, user_name=user_name, action=action))
+            self.session.commit()
+        except Exception:
+            pass
+
+    def query_definition(self, term):
+        ''' Query the definition for a term from the database
+        '''
+        return self.session.query(Definition).filter(func.lower(Definition.term) == func.lower(term)).first()
+
+    def get_matches_for_term(self, term):
+        ''' Search the glossary for entries that are matches for the passed term.
+        '''
+        # strip pattern-matching metacharacters from the term
+        stripped_term = re.sub(r'\||_|%|\*|\+|\?|\{|\}|\(|\)|\[|\]', '', term)
+        # get ILIKE matches for the term
+        # in SQL: SELECT term FROM definitions WHERE term ILIKE '%{}%'.format(stripped_term);
+        like_matches = self.session.query(Definition).filter(Definition.term.ilike("%{}%".format(stripped_term)))
+        like_terms = [entry.term for entry in like_matches]
+
+        # get TSV matches for the term
+        tsv_matches = self.session.query(Definition).from_statement(sql.text(
+            '''SELECT * FROM definitions WHERE tsv_search @@ plainto_tsquery(:term) ORDER BY ts_rank(tsv_search, plainto_tsquery(:term)) DESC;'''
+        )).params(term=stripped_term).all()
+        tsv_terms = [entry.term for entry in tsv_matches]
+
+        # put ilike matches that aren't in the TSV list at the front
+        match_terms = list(tsv_terms)
+        for check_term in like_terms:
+            if check_term not in tsv_terms:
+                match_terms.insert(0, check_term)
+
+        return match_terms
+
+    def query_definition_and_get_response(self, slash_command, command_text, user_name):
+        ''' Get the definition for the passed term and return the appropriate responses
+        '''
+        # query the definition
+        entry = self.query_definition(command_text)
+        if not entry:
+            # remember this query
+            self.log_query(term=command_text, user_name=user_name, action="not_found")
+
+            message = f"Sorry, but *{self.bot_name}* has no definition for *{command_text}*. You can set a definition with the command *{slash_command} {command_text} = _definition_*"
+
+            search_results = self.get_matches_for_term(command_text)
+            if len(search_results):
+                search_results_styled = ', '.join([make_bold(term) for term in search_results])
+                message = "{}, or try asking for one of these terms that may be related: {}".format(message, search_results_styled)
+
+            return message
+
         # remember this query
-        log_query(term=command_text, user_name=user_name, action="not_found")
+        self.log_query(term=command_text, user_name=user_name, action="found")
 
-        message = "Sorry, but *{bot_name}* has no definition for *{term}*. You can set a definition with the command *{command} {term} = _definition_*".format(bot_name=BOT_NAME, command=slash_command, term=command_text)
+        # if the definition starts with an alias keyphrase, check to see if the rest
+        # of the definition matches another entry, and return that definition instead
+        alias_term = check_definition_for_alias(entry.definition)
+        if alias_term:
+            alias_entry = self.query_definition(alias_term)
 
-        search_results = get_matches_for_term(command_text)
+            if alias_entry:
+                entry = alias_entry
+
+        image_url = get_image_url(entry.definition)
+
+        returnVal = {
+            "text": f"{user_name} {slash_command} {entry.term}: {entry.definition}",
+            "blocks": [
+                {"type": "header", "text": { "type": "plain_text", "text": entry.term } },
+                {"type": "section", "text": { "type": "plain_text", "text": entry.definition } },
+                {"type": "context", "elements": [{ "type": "plain_text", "text": f"{user_name} {slash_command} {entry.term}" }] }
+            ]
+        }
+        if image_url is not None:
+                returnVal["blocks"].append({
+                    "type": "image",
+			        "image_url": image_url,
+			        "alt_text": entry.term
+                })
+        return returnVal
+
+    def search_term_and_get_response(self, command_text):
+        ''' Search the database for the passed term and return the results
+        '''
+        # query the definition
+        search_results = self.get_matches_for_term(command_text)
         if len(search_results):
             search_results_styled = ', '.join([make_bold(term) for term in search_results])
-            message = "{}, or try asking for one of these terms that may be related: {}".format(message, search_results_styled)
-
-        return message, 200
-
-    # remember this query
-    log_query(term=command_text, user_name=user_name, action="found")
-
-    # if the definition starts with an alias keyphrase, check to see if the rest
-    # of the definition matches another entry, and return that definition instead
-    alias_term = check_definition_for_alias(entry.definition)
-    if alias_term:
-        alias_entry = query_definition(alias_term)
-
-        if alias_entry:
-            entry = alias_entry
-
-    fallback = "{name} {command} {term}: {definition}".format(name=user_name, command=slash_command, term=entry.term, definition=entry.definition)
-    if not private_response:
-        image_url = get_image_url(entry.definition)
-        pretext = "*{name}* {command} {text}".format(name=user_name, command=slash_command, text=command_text)
-        title = entry.term
-        text = entry.definition
-        send_webhook_with_attachment(channel_id=channel_id, text=text, fallback=fallback, pretext=pretext, title=title, image_url=image_url)
-        return "", 200
-    else:
-        return fallback, 200
-
-def search_term_and_get_response(command_text):
-    ''' Search the database for the passed term and return the results
-    '''
-    # query the definition
-    search_results = get_matches_for_term(command_text)
-    if len(search_results):
-        search_results_styled = ', '.join([make_bold(term) for term in search_results])
-        message = "{bot_name} found {term} in: {results}".format(bot_name=BOT_NAME, term=make_bold(command_text), results=search_results_styled)
-    else:
-        message = "{bot_name} could not find {term} in any terms or definitions.".format(bot_name=BOT_NAME, term=make_bold(command_text))
-
-    return message, 200
-
-def set_definition_and_get_response(slash_command, command_params, user_name):
-    ''' Set the definition for the passed parameters and return the approriate responses
-    '''
-    set_components = command_params.split('=', 1)
-    set_term = set_components[0].strip()
-    set_value = set_components[1].strip() if len(set_components) > 1 else ""
-
-    # reject poorly formed set commands
-    if "=" not in command_params or not set_term or not set_value:
-        return "Sorry, but *{bot_name}* didn't understand your command. You can set definitions like this: *{command} EW = Eligibility Worker*".format(bot_name=BOT_NAME, command=slash_command), 200
-
-    # reject attempts to set reserved terms
-    if set_term.lower() in STATS_CMDS + RECENT_CMDS + HELP_CMDS:
-        return "Sorry, but *{bot_name}* can't set a definition for {term} because it's a reserved term.".format(bot_name=BOT_NAME, term=make_bold(set_term))
-
-    # check the database to see if the term's already defined
-    entry = query_definition(set_term)
-    if entry:
-        if set_term != entry.term or set_value != entry.definition:
-            # update the definition in the database
-            last_term = entry.term
-            last_value = entry.definition
-            entry.term = set_term
-            entry.definition = set_value
-            entry.user_name = user_name
-            entry.creation_date = datetime.utcnow()
-            try:
-                db.session.add(entry)
-                db.session.commit()
-            except Exception as e:
-                return "Sorry, but *{bot_name}* was unable to update that definition: {message}, {args}".format(bot_name=BOT_NAME, message=e.message, args=e.args), 200
-
-            return "*{bot_name}* has set the definition for {term} to {definition}, overwriting the previous entry, which was {prev_term} defined as {prev_def}".format(bot_name=BOT_NAME, term=make_bold(set_term), definition=make_bold(set_value), prev_term=make_bold(last_term), prev_def=make_bold(last_value)), 200
-
+            message = "{self.bot_name} found {term} in: {results}".format(bot_name=self.bot_name, term=make_bold(command_text), results=search_results_styled)
         else:
-            return "*{bot_name}* already knows that the definition for {term} is {definition}".format(bot_name=BOT_NAME, term=make_bold(set_term), definition=make_bold(set_value)), 200
+            message = "{self.bot_name} could not find {term} in any terms or definitions.".format(bot_name=self.bot_name, term=make_bold(command_text))
 
-    # save the definition in the database
-    entry = Definition(term=set_term, definition=set_value, user_name=user_name)
-    try:
-        db.session.add(entry)
-        db.session.commit()
-    except Exception as e:
-        return "Sorry, but *{bot_name}* was unable to save that definition: {message}, {args}".format(bot_name=BOT_NAME, message=e.message, args=e.args), 200
+        return message
 
-    return "*{bot_name}* has set the definition for {term} to {definition}".format(bot_name=BOT_NAME, term=make_bold(set_term), definition=make_bold(set_value)), 200
+    def set_definition_and_get_response(self, slash_command, command_params, user_name):
+        ''' Set the definition for the passed parameters and return the approriate responses
+        '''
+        set_components = command_params.split('=', 1)
+        set_term = set_components[0].strip()
+        set_value = set_components[1].strip() if len(set_components) > 1 else ""
 
-#
-# ROUTES
-#
+        # reject poorly formed set commands
+        if "=" not in command_params or not set_term or not set_value:
+            return "Sorry, but *{self.bot_name}* didn't understand your command. You can set definitions like this: *{command} EW = Eligibility Worker*".format(bot_name=self.bot_name, command=slash_command)
 
-@app.route('/', methods=['POST'])
-def index():
-    # verify that the request is authorized
-    if request.form['token'] != current_app.config['SLACK_TOKEN']:
-        abort(401)
+        # reject attempts to set reserved terms
+        if set_term.lower() in STATS_CMDS + RECENT_CMDS + HELP_CMDS:
+            return "Sorry, but *{self.bot_name}* can't set a definition for {term} because it's a reserved term.".format(bot_name=self.bot_name, term=make_bold(set_term))
 
-    # get the user name and channel ID
-    user_name = request.form['user_name']
-    channel_id = request.form['channel_id']
+        # check the database to see if the term's already defined
+        entry = self.query_definition(set_term)
+        if entry:
+            if set_term != entry.term or set_value != entry.definition:
+                # update the definition in the database
+                last_term = entry.term
+                last_value = entry.definition
+                entry.term = set_term
+                entry.definition = set_value
+                entry.user_name = user_name
+                entry.creation_date = datetime.utcnow()
+                try:
+                    self.session.add(entry)
+                    self.session.commit()
+                except Exception as e:
+                    return "Sorry, but *{self.bot_name}* was unable to update that definition: {message}, {args}".format(bot_name=self.bot_name, message=e.message, args=e.args)
 
-    # get the slash command
-    slash_command = request.form['command']
+                return "*{self.bot_name}* has set the definition for {term} to {definition}, overwriting the previous entry, which was {prev_term} defined as {prev_def}".format(bot_name=self.bot_name, term=make_bold(set_term), definition=make_bold(set_value), prev_term=make_bold(last_term), prev_def=make_bold(last_value))
 
-    # strip excess spaces from the text
-    full_text = request.form['text'].strip()
-    full_text = re.sub(" +", " ", full_text)
-    command_text = full_text
+            else:
+                return "*{self.bot_name}* already knows that the definition for {term} is {definition}".format(bot_name=self.bot_name, term=make_bold(set_term), definition=make_bold(set_value))
 
-    #
-    # GET definition (for a single word that can't be interpreted as a command)
-    #
-
-    # if the text is a single word that's not a single-word command, treat it as a get
-    if command_text.count(" ") == 0 and len(command_text) > 0 and \
-       command_text.lower() not in STATS_CMDS + RECENT_CMDS + HELP_CMDS + SET_CMDS:
-        return query_definition_and_get_response(slash_command, command_text, user_name, channel_id, False)
-
-    #
-    # SET definition
-    #
-
-    # if the text contains an '=', treat it as a 'set' command
-    if '=' in command_text:
-        return set_definition_and_get_response(slash_command, command_text, user_name)
-
-    # we'll respond privately if the text is prefixed with 'shh ' (or any number of s followed by any number of h)
-    shh_pattern = re.compile(r'^s+h+ ')
-    private_response = shh_pattern.match(command_text)
-    if private_response:
-        # strip the 'shh' from the command text
-        command_text = shh_pattern.sub('', command_text)
-
-    # extract the command action and parameters
-    command_action, command_params = get_command_action_and_params(command_text)
-
-    #
-    # DELETE definition
-    #
-
-    if command_action in DELETE_CMDS:
-        delete_term = command_params
-
-        # verify that the definition is in the database
-        entry = query_definition(delete_term)
-        if not entry:
-            return "Sorry, but *{bot_name}* has no definition for {term}".format(bot_name=BOT_NAME, term=make_bold(delete_term)), 200
-
-        # delete the definition from the database
+        # save the definition in the database
+        entry = Definition(term=set_term, definition=set_value, user_name=user_name)
         try:
-            db.session.delete(entry)
-            db.session.commit()
+            self.session.add(entry)
+            self.session.commit()
         except Exception as e:
-            return "Sorry, but *{bot_name}* was unable to delete that definition: {message}, {args}".format(bot_name=BOT_NAME, message=e.message, args=e.args), 200
+            return f"Sorry, but *{self.bot_name}* was unable to save that definition: {e}"
 
-        return "*{bot_name}* has deleted the definition for {term}, which was {definition}".format(bot_name=BOT_NAME, term=make_bold(delete_term), definition=make_bold(entry.definition)), 200
+        return "*{self.bot_name}* has set the definition for {term} to {definition}".format(bot_name=self.bot_name, term=make_bold(set_term), definition=make_bold(set_value))
 
-    #
-    # SEARCH for a string
-    #
-
-    if command_action in SEARCH_CMDS:
-        search_term = command_params
-
-        return search_term_and_get_response(search_term)
-
-    #
-    # HELP
-    #
-
-    if command_action in HELP_CMDS or command_text.strip() == "":
-        return "*{command} _term_* to show the definition for a term\n*{command} _term_ = _definition_* to set the definition for a term\n*{command} _alias_ = see _term_* to set an alias for a term\n*{command} delete _term_* to delete the definition for a term\n*{command} stats* to show usage statistics\n*{command} recent* to show recently defined terms\n*{command} search _term_* to search terms and definitions\n*{command} shh _command_* to get a private response\n*{command} help* to see this message\n<https://github.com/codeforamerica/glossary-bot/issues|report bugs and request features>".format(command=slash_command), 200
-
-    #
-    # STATS
-    #
-
-    if command_action in STATS_CMDS:
-        stats_newline = get_stats()
-        stats_comma = re.sub("\n", ", ", stats_newline)
-        if not private_response:
-            # send the message
-            fallback = "{name} {command} stats: {comma}".format(name=user_name, command=slash_command, comma=stats_comma)
-            pretext = "*{name}* {command} stats".format(name=user_name, command=slash_command)
-            title = ""
-            send_webhook_with_attachment(channel_id=channel_id, text=stats_newline, fallback=fallback, pretext=pretext, title=title)
-            return "", 200
-
-        else:
-            return stats_comma, 200
-
-    #
-    # LEARNINGS/RECENT
-    #
-
-    if command_action in RECENT_CMDS:
-        # extract parameters
-        recent_args = parse_learnings_params(command_params)
-        learnings_plain_text, learnings_rich_text = get_learnings(**recent_args)
-        if not private_response:
-            # send the message
-            fallback = "{name} {command} {action} {params}: {text}".format(name=user_name, command=slash_command, action=command_action, params=command_params, text=learnings_plain_text)
-            pretext = "*{name}* {command} {action} {params}".format(name=user_name, command=slash_command, action=command_action, params=command_params)
-            title = ""
-            send_webhook_with_attachment(channel_id=channel_id, text=learnings_rich_text, fallback=fallback, pretext=pretext, title=title, mrkdwn_in=["text"])
-            return "", 200
-
-        else:
-            return learnings_plain_text, 200
-
-    #
-    # GET definition (for any text that wasn't caught before this)
-    #
-
-    # check the definition
-    return query_definition_and_get_response(slash_command, command_text, user_name, channel_id, private_response)

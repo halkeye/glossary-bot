@@ -3,3 +3,16 @@ ignore = ["E501"]
 exclude = [
   "migrations"
 ]
+
+[tool.black]
+line-length = 125
+
+[pytest]
+log_file = logs/pytest.log
+log_file_level = DEBUG
+log_format = %(asctime)s %(levelname)s %(message)s
+log_date_format = %Y-%m-%d %H:%M:%S
+
+[flake8]
+exclude = .gitignore,venv
+max-line-length = 125
