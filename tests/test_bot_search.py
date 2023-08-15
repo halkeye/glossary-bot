@@ -24,7 +24,7 @@ class TestBotSearch:
                 post_match[0], post_match[1]))
 
         # request a definition that doesn't exist, but that will generate suggestions
-        robo_response = handle_glossary(text="shh gloss")
+        robo_response = handle_glossary(text="gloss")
         match_text = ', '.join(['*{}*'.format(item[0]) for item in matches])
         assert match_text in robo_response
 
