@@ -1,12 +1,10 @@
-from flask import abort, current_app, request
-from . import gloss as app
-from .models import Definition, Interaction
-from sqlalchemy import func, distinct, sql
-from requests import post
-from datetime import datetime
-import json
 import random
 import re
+import logging
+
+from .models import Definition, Interaction
+from sqlalchemy import func, distinct, sql
+from datetime import datetime
 
 STATS_CMDS = ("stats",)
 RECENT_CMDS = ("learnings", "recent")
@@ -18,6 +16,9 @@ SEARCH_CMDS = ("search",)
 ALIAS_KEYWORDS = ("see also", "see")
 
 BOT_EMOJI = ":lipstick:"
+
+logger = logging.getLogger(__name__)
+
 
 def get_image_url(text):
     ''' Extract an image url from the passed text. If there are multiple image urls,
@@ -125,35 +126,6 @@ class Bot:
         payload_values['icon_emoji'] = BOT_EMOJI
         return payload_values
 
-    def send_webhook_with_attachment(self, channel_id="", text=None, fallback="", pretext="", title="", color="#f33373", image_url=None, mrkdwn_in=[]):
-        ''' Send a webhook with an attachment, for a more richly-formatted message.
-            see https://api.slack.com/docs/attachments
-        '''
-        # don't send empty messages
-        if not text:
-            return
-
-        # get the standard payload dict
-        # :NOTE: sending text defined as 'pretext' to the standard payload and leaving
-        #        'pretext' in the attachment empty so that I can use markdown styling.
-        payload_values = get_payload_values(channel_id=channel_id, text=pretext)
-        # build the attachment dict
-        attachment_values = {}
-        attachment_values['fallback'] = fallback
-        attachment_values['pretext'] = None
-        attachment_values['title'] = title
-        attachment_values['text'] = text
-        attachment_values['color'] = color
-        attachment_values['image_url'] = image_url
-        if len(mrkdwn_in):
-            attachment_values['mrkdwn_in'] = mrkdwn_in
-        # add the attachment dict to the payload and jsonify it
-        payload_values['attachments'] = [attachment_values]
-        payload = json.dumps(payload_values)
-
-        # return the response
-        return post(current_app.config['SLACK_WEBHOOK_URL'], data=payload)
-
     def get_stats(self):
         ''' Gather and return some statistics
         '''
@@ -232,7 +204,7 @@ class Bot:
         stripped_term = re.sub(r'\||_|%|\*|\+|\?|\{|\}|\(|\)|\[|\]', '', term)
         # get ILIKE matches for the term
         # in SQL: SELECT term FROM definitions WHERE term ILIKE '%{}%'.format(stripped_term);
-        like_matches = self.session.query(Definition).filter(Definition.term.ilike("%{}%".format(stripped_term)))
+        like_matches = self.session.query(Definition).filter(Definition.term.ilike(f"%{stripped_term}%"))
         like_terms = [entry.term for entry in like_matches]
 
         # get TSV matches for the term
@@ -263,7 +235,7 @@ class Bot:
             search_results = self.get_matches_for_term(command_text)
             if len(search_results):
                 search_results_styled = ', '.join([make_bold(term) for term in search_results])
-                message = "{}, or try asking for one of these terms that may be related: {}".format(message, search_results_styled)
+                message = f"{message}, or try asking for one of these terms that may be related: {search_results_styled}"
 
             return message
 
@@ -281,21 +253,33 @@ class Bot:
 
         image_url = get_image_url(entry.definition)
 
-        returnVal = {
-            "text": f"{user_name} {slash_command} {entry.term}: {entry.definition}",
-            "blocks": [
-                {"type": "header", "text": { "type": "plain_text", "text": entry.term } },
-                {"type": "section", "text": { "type": "plain_text", "text": entry.definition } },
-                {"type": "context", "elements": [{ "type": "plain_text", "text": f"{user_name} {slash_command} {entry.term}" }] }
-            ]
-        }
+        returnVal = f"{make_bold(entry.term)}: {entry.definition}"
         if image_url is not None:
-                returnVal["blocks"].append({
-                    "type": "image",
-			        "image_url": image_url,
-			        "alt_text": entry.term
-                })
+            return {
+                "text": returnVal,
+                "blocks": [
+                    {"type": "section", "text": { "type": "mrkdwn", "text": returnVal } },
+                    { "type": "image", "image_url": image_url, "alt_text": returnVal }
+                ]
+            }
+
         return returnVal
+
+        # returnVal = {
+        #     "text": f"{user_name} {slash_command} {entry.term}: {entry.definition}",
+        #     "blocks": [
+        #         {"type": "header", "text": { "type": "plain_text", "text": entry.term } },
+        #         {"type": "section", "text": { "type": "plain_text", "text": entry.definition } },
+        #     ]
+        # }
+        # if image_url is not None:
+        #         returnVal["blocks"].append({
+        #             "type": "image",
+        #             "image_url": image_url,
+        #             "alt_text": entry.term
+        #         })
+        # returnVal["blocks"].append({"type": "context", "elements": [{ "type": "plain_text", "text": f"{user_name} {slash_command} {entry.term}" }] })
+        # return returnVal
 
     def search_term_and_get_response(self, command_text):
         ''' Search the database for the passed term and return the results
@@ -304,9 +288,9 @@ class Bot:
         search_results = self.get_matches_for_term(command_text)
         if len(search_results):
             search_results_styled = ', '.join([make_bold(term) for term in search_results])
-            message = "{self.bot_name} found {term} in: {results}".format(bot_name=self.bot_name, term=make_bold(command_text), results=search_results_styled)
+            message = f"{self.bot_name} found {make_bold(command_text)} in: {search_results_styled}"
         else:
-            message = "{self.bot_name} could not find {term} in any terms or definitions.".format(bot_name=self.bot_name, term=make_bold(command_text))
+            message = f"{self.bot_name} could not find {make_bold(command_text)} in any terms or definitions."
 
         return message
 
@@ -319,11 +303,11 @@ class Bot:
 
         # reject poorly formed set commands
         if "=" not in command_params or not set_term or not set_value:
-            return "Sorry, but *{self.bot_name}* didn't understand your command. You can set definitions like this: *{command} EW = Eligibility Worker*".format(bot_name=self.bot_name, command=slash_command)
+            return f"Sorry, but *{self.bot_name}* didn't understand your command. You can set definitions like this: *{slash_command} EW = Eligibility Worker*"
 
         # reject attempts to set reserved terms
         if set_term.lower() in STATS_CMDS + RECENT_CMDS + HELP_CMDS:
-            return "Sorry, but *{self.bot_name}* can't set a definition for {term} because it's a reserved term.".format(bot_name=self.bot_name, term=make_bold(set_term))
+            return f"Sorry, but *{self.bot_name}* can't set a definition for {make_bold(set_term)} because it's a reserved term."
 
         # check the database to see if the term's already defined
         entry = self.query_definition(set_term)
@@ -336,24 +320,104 @@ class Bot:
                 entry.definition = set_value
                 entry.user_name = user_name
                 entry.creation_date = datetime.utcnow()
-                try:
-                    self.session.add(entry)
-                    self.session.commit()
-                except Exception as e:
-                    return "Sorry, but *{self.bot_name}* was unable to update that definition: {message}, {args}".format(bot_name=self.bot_name, message=e.message, args=e.args)
 
-                return "*{self.bot_name}* has set the definition for {term} to {definition}, overwriting the previous entry, which was {prev_term} defined as {prev_def}".format(bot_name=self.bot_name, term=make_bold(set_term), definition=make_bold(set_value), prev_term=make_bold(last_term), prev_def=make_bold(last_value))
+                self.session.add(entry)
+                self.session.commit()
 
+                return f"The definition for {make_bold(set_term)} is now set to {make_bold(set_value)}, overwriting the previous entry, which was {make_bold(last_term)} defined as {make_bold(last_value)}"
             else:
-                return "*{self.bot_name}* already knows that the definition for {term} is {definition}".format(bot_name=self.bot_name, term=make_bold(set_term), definition=make_bold(set_value))
+                return f"The definition for {make_bold(set_term)} was already set to {make_bold(set_value)}"
 
         # save the definition in the database
         entry = Definition(term=set_term, definition=set_value, user_name=user_name)
-        try:
-            self.session.add(entry)
-            self.session.commit()
-        except Exception as e:
-            return f"Sorry, but *{self.bot_name}* was unable to save that definition: {e}"
+        self.session.add(entry)
+        self.session.commit()
 
-        return "*{self.bot_name}* has set the definition for {term} to {definition}".format(bot_name=self.bot_name, term=make_bold(set_term), definition=make_bold(set_value))
+        return f"Definition for {make_bold(set_term)} is now set to {make_bold(set_value)}"
 
+    def handle_glossary(self, user_name, slash_command, text):
+        full_text = text.strip()
+        full_text = re.sub(" +", " ", full_text)
+        command_text = full_text
+
+        #
+        # GET definition (for a single word that can't be interpreted as a command)
+        #
+
+        # if the text is a single word that's not a single-word command, treat it as a get
+        if command_text.count(" ") == 0 and len(command_text) > 0 and \
+        command_text.lower() not in STATS_CMDS + RECENT_CMDS + HELP_CMDS + SET_CMDS:
+            return self.query_definition_and_get_response(slash_command, command_text, user_name)
+
+        #
+        # SET definition
+        #
+
+        # if the text contains an '=', treat it as a 'set' command
+        if '=' in command_text:
+            return self.set_definition_and_get_response(slash_command, command_text, user_name)
+
+        # extract the command action and parameters
+        command_action, command_params = get_command_action_and_params(command_text)
+
+        #
+        # DELETE definition
+        #
+
+        if command_action in DELETE_CMDS:
+            delete_term = command_params
+
+            # verify that the definition is in the database
+            entry = self.query_definition(delete_term)
+            if not entry:
+                return f"Sorry, but *{self.bot_name}* has no definition for {make_bold(delete_term)}"
+
+            # delete the definition from the database
+            try:
+                self.session.delete(entry)
+                self.session.commit()
+            except Exception as e:
+                return f"Sorry, but *{self.bot_name}* was unable to delete that definition: {e.message}, {e.args}"
+
+            return f"*{self.bot_name}* has deleted the definition for {make_bold(delete_term)}, which was {make_bold(entry.definition)}"
+
+        #
+        # SEARCH for a string
+        #
+
+        if command_action in SEARCH_CMDS:
+            search_term = command_params
+
+            return self.search_term_and_get_response(search_term)
+
+        #
+        # HELP
+        #
+
+        if command_action in HELP_CMDS or command_text.strip() == "":
+            return f"*{slash_command} _term_* to show the definition for a term\n*{slash_command} _term_ = _definition_* to set the definition for a term\n*{slash_command} _alias_ = see _term_* to set an alias for a term\n*{slash_command} delete _term_* to delete the definition for a term\n*{slash_command} stats* to show usage statistics\n*{slash_command} recent* to show recently defined terms\n*{slash_command} search _term_* to search terms and definitions\n*{slash_command} help* to see this message\n<https://github.com/codeforamerica/glossary-bot/issues|report bugs and request features>"
+
+        #
+        # STATS
+        #
+
+        if command_action in STATS_CMDS:
+            stats_newline = self.get_stats()
+            return stats_newline
+
+        #
+        # LEARNINGS/RECENT
+        #
+
+        if command_action in RECENT_CMDS:
+            # extract parameters
+            recent_args = parse_learnings_params(command_params)
+            learnings_plain_text, learnings_rich_text = self.get_learnings(**recent_args)
+            return learnings_rich_text
+
+        #
+        # GET definition (for any text that wasn't caught before this)
+        #
+
+        # check the definition
+        return self.query_definition_and_get_response(slash_command, command_text, user_name)

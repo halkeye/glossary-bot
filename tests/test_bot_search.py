@@ -1,38 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-import unittest
-import logging
 import random
-from flask_migrate import Migrate, upgrade
-from tests.test_base import TestBase
-from sqlalchemy import sql
 
-class TestBotSearch(TestBase):
-
-    def setUp(self):
-        super(TestBotSearch, self).setUp()
-
-        self.db.session.close()
-        self.db.drop_all()
-        self.db.session.remove()
-        self.db.session.commit()
-
-        self.db.session.execute(sql.text('DROP TABLE IF EXISTS alembic_version'))
-        self.db.session.commit()
-
-        # suppress logging
-        logging.disable(logging.CRITICAL)
-        # run the database migrations
-        self.app.config['TESTING'] = True
-        with self.app.app_context():
-            Migrate(self.app, self.db)
-            upgrade()
-
-    def tearDown(self):
-        super(TestBotSearch, self).tearDown()
-        logging.disable(logging.NOTSET)
-
-    def test_suggestions_made_when_no_match_found(self):
+class TestBotSearch:
+    def test_suggestions_made_when_no_match_found(self, handle_glossary):
         ''' When a definition is requested for a term that isn't in the database, a list
             of suggestions is returned.
         '''
@@ -49,15 +20,15 @@ class TestBotSearch(TestBase):
         randomized_matches = list(matches)
         random.shuffle(randomized_matches)
         for post_match in randomized_matches:
-            self.post_command(text="{} = {}".format(
+            handle_glossary(text="{} = {}".format(
                 post_match[0], post_match[1]))
 
         # request a definition that doesn't exist, but that will generate suggestions
-        robo_response = self.post_command(text="shh gloss")
+        robo_response = handle_glossary(text="shh gloss")
         match_text = ', '.join(['*{}*'.format(item[0]) for item in matches])
-        self.assertTrue(match_text.encode('utf-8') in robo_response.data)
+        assert match_text in robo_response
 
-    def test_search_results(self):
+    def test_search_results(self, handle_glossary):
         ''' A search of terms and definitions returns the expected results.
         '''
         # set some definitions
@@ -72,30 +43,27 @@ class TestBotSearch(TestBase):
         randomized_matches = list(matches)
         random.shuffle(randomized_matches)
         for post_match in randomized_matches:
-            self.post_command(
+            handle_glossary(
                 text="{} = {}".format(post_match[0], post_match[1]))
 
         # make some searchs and verify that they come back as expected
-        robo_response = self.post_command(text="search youth")
-        self.assertIn(
-            'found *youth* in: *ACYF*, *TAY*'.encode('utf-8'), robo_response.data)
+        robo_response = handle_glossary(text="search youth")
+        assert 'found *youth* in: *ACYF*, *TAY*' in robo_response
 
-        robo_response = self.post_command(text="search saws")
-        self.assertIn(
-            'found *saws* in: *SAWS*, *CalWIN*'.encode('utf-8'), robo_response.data)
+        robo_response = handle_glossary(text="search saws")
+        assert 'found *saws* in: *SAWS*, *CalWIN*' in robo_response
 
-        robo_response = self.post_command(text="search calwin")
-        self.assertIn(
-            'found *calwin* in: *CalWIN*, *SAWS*'.encode('utf-8'), robo_response.data)
+        robo_response = handle_glossary(text="search calwin")
+        assert 'found *calwin* in: *CalWIN*, *SAWS*' in robo_response
 
-        robo_response = self.post_command(text="search state")
-        self.assertIn('*TAY*'.encode('utf-8'), robo_response.data)
-        self.assertIn('*WIB*'.encode('utf-8'), robo_response.data)
+        robo_response = handle_glossary(text="search state")
+        assert '*TAY*' in robo_response
+        assert '*WIB*' in robo_response
 
-        robo_response = self.post_command(text="search banana")
-        self.assertIn(
-            'could not find *banana* in any terms or definitions.'.encode('utf-8'), robo_response.data)
+        robo_response = handle_glossary(text="search banana")
+        assert 'could not find *banana* in any terms or definitions.' in robo_response
 
 
 if __name__ == '__main__':
-    unittest.main()
+    import pytest
+    pytest.main()

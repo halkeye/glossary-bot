@@ -1,6 +1,6 @@
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from datetime import datetime
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column
 from sqlalchemy.types import Integer, DateTime, Unicode
 

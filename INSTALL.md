@@ -52,7 +52,7 @@ and make sure that the value of `DATABASE_URL` in `.env` matches the name of the
 Initialize the database:
 
 ```
-flask db upgrade
+alembic upgrade head
 ```
 
 And run the application:

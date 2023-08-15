@@ -8,7 +8,7 @@
     "bot"
   ],
   "scripts": {
-    "postdeploy": "flask db upgrade"
+    "postdeploy": "alembic upgrade head"
   },
   "env": {
     "SLACK_TOKEN": {
