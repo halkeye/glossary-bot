@@ -6,8 +6,8 @@ from pytest_alembic import Config
 from pytest_mock_resources import create_postgres_fixture
 from sqlalchemy import create_engine
 
-from sqlalchemy.orm import Session
-from gloss.models import Definition, Interaction, Base
+from sqlalchemy.orm import Session, declarative_base
+from gloss.models import Definition, Interaction
 from gloss.bot import Bot
 
 if environ.get('TEST_DATABASE_URL'):
@@ -15,7 +15,7 @@ if environ.get('TEST_DATABASE_URL'):
     def pg():
         pass
 else:
-    pg = create_postgres_fixture(Base)
+    pg = create_postgres_fixture(declarative_base())
 
 @pytest.fixture
 def alembic_engine(pg):
@@ -42,6 +42,8 @@ def alembic_config(alembic_engine):
 
 @pytest.fixture
 def db_session(alembic_engine, alembic_runner):
+    alembic_runner.migrate_up_to('heads')
+
     session = Session(alembic_engine)
     session.query(Interaction).delete()
     session.query(Definition).delete()
