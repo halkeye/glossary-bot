@@ -1,7 +1,7 @@
 import random
 import re
 import logging
-
+from thefuzz import process
 from .models import Definition, Interaction
 from sqlalchemy import func, distinct, sql
 from datetime import datetime
@@ -14,6 +14,8 @@ DELETE_CMDS = ("delete",)
 SEARCH_CMDS = ("search",)
 
 ALIAS_KEYWORDS = ("see also", "see")
+
+MAX_CONFIDENCE = 50
 
 BOT_EMOJI = ":lipstick:"
 
@@ -200,26 +202,23 @@ class Bot:
     def get_matches_for_term(self, term):
         ''' Search the glossary for entries that are matches for the passed term.
         '''
+
         # strip pattern-matching metacharacters from the term
         stripped_term = re.sub(r'\||_|%|\*|\+|\?|\{|\}|\(|\)|\[|\]', '', term)
         # get ILIKE matches for the term
         # in SQL: SELECT term FROM definitions WHERE term ILIKE '%{}%'.format(stripped_term);
-        like_matches = self.session.query(Definition).filter(Definition.term.ilike(f"%{stripped_term}%"))
-        like_terms = [entry.term for entry in like_matches]
+        like_matches = self.session.query(Definition).filter(Definition.term.ilike(f"%{stripped_term}%")).order_by(Definition.term.desc())
+        like_results = [entry.term for entry in like_matches]
 
-        # get TSV matches for the term
-        tsv_matches = self.session.query(Definition).from_statement(sql.text(
-            '''SELECT * FROM definitions WHERE tsv_search @@ plainto_tsquery(:term) ORDER BY ts_rank(tsv_search, plainto_tsquery(:term)) DESC;'''
-        )).params(term=stripped_term).all()
-        tsv_terms = [entry.term for entry in tsv_matches]
+        all_rows = {row.term:row.definition for row in self.session.query(Definition).all()}
+        fuzzy_results = [result[2] for result in filter(lambda result: result[1] >= MAX_CONFIDENCE, process.extract(term, all_rows, limit=20))]
 
-        # put ilike matches that aren't in the TSV list at the front
-        match_terms = list(tsv_terms)
-        for check_term in like_terms:
-            if check_term not in tsv_terms:
-                match_terms.insert(0, check_term)
+        results = list(fuzzy_results)
+        for check_term in like_results:
+            if check_term not in results:
+                results.insert(0, check_term)
 
-        return match_terms
+        return results
 
     def query_definition_and_get_response(self, slash_command, command_text, user_name):
         ''' Get the definition for the passed term and return the appropriate responses
@@ -230,7 +229,7 @@ class Bot:
             # remember this query
             self.log_query(term=command_text, user_name=user_name, action="not_found")
 
-            message = f"Sorry, but *{self.bot_name}* has no definition for *{command_text}*. You can set a definition with the command *{slash_command} {command_text} = _definition_*"
+            message = f"Sorry, there is no definition for *{command_text}*. You can set a definition with the command *{slash_command} {command_text} = _definition_*"
 
             search_results = self.get_matches_for_term(command_text)
             if len(search_results):
@@ -264,22 +263,6 @@ class Bot:
             }
 
         return returnVal
-
-        # returnVal = {
-        #     "text": f"{user_name} {slash_command} {entry.term}: {entry.definition}",
-        #     "blocks": [
-        #         {"type": "header", "text": { "type": "plain_text", "text": entry.term } },
-        #         {"type": "section", "text": { "type": "plain_text", "text": entry.definition } },
-        #     ]
-        # }
-        # if image_url is not None:
-        #         returnVal["blocks"].append({
-        #             "type": "image",
-        #             "image_url": image_url,
-        #             "alt_text": entry.term
-        #         })
-        # returnVal["blocks"].append({"type": "context", "elements": [{ "type": "plain_text", "text": f"{user_name} {slash_command} {entry.term}" }] })
-        # return returnVal
 
     def search_term_and_get_response(self, command_text):
         ''' Search the database for the passed term and return the results

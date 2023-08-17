@@ -202,7 +202,7 @@ class TestBot:
         '''
         # send a POST to the bot to request the definition
         robo_response = handle_glossary(text="EW")
-        assert "has no definition for" in json.dumps(robo_response)
+        assert "Sorry, there is no definition for *EW*" in robo_response
 
         # the request was recorded in the interactions table
         interaction_check = db_session.query(Interaction).first()
