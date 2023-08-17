@@ -38,6 +38,8 @@ dependencies = [
 where = ["gloss"]  # ["."] by default
 
 [tool.ruff]
+select = ["E", "F"]
+target-version = "py310"
 ignore = ["E501"]
 exclude = [
   "migrations",
