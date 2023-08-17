@@ -1,4 +1,3 @@
-from sqlalchemy.dialects.postgresql import TSVECTOR
 from datetime import datetime
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column
@@ -16,7 +15,6 @@ class Definition(Base):
     term = Column(Unicode(), index=True)
     definition = Column(Unicode())
     user_name = Column(Unicode())
-    tsv_search = Column(TSVECTOR)
 
     def __repr__(self):
         return '<Term: {}, Definition: {}>'.format(self.term, self.definition)
