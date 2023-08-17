@@ -58,7 +58,7 @@ alembic upgrade head
 And run the application:
 
 ```
-flask run
+python app.py
 ```
 
 #### Test
@@ -72,11 +72,5 @@ createdb glossary-bot-test
 You can now run the tests from the command line:
 
 ```
-python -m unittest
-```
-
-or run an individual test:
-
-```
-python -m unittest tests.test_bot.TestBot.test_get_definition
+pytest
 ```
