@@ -10,7 +10,6 @@ spec:
       source_dir: /
       git:
         branch: master
-        deploy_on_push: true
         repo: halkeye/glossary-bot
       envs:
         - key: SLACK_APP_TOKEN
