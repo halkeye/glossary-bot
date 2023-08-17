@@ -1,0 +1,29 @@
+spec:
+  name: glossary-bot
+  services:
+    - name: glossary-bot
+      environment_slug: python
+      run_command: alembic upgrade head && python app.py
+      source_dir: /
+      git:
+        branch: master
+        deploy_on_push: true
+        repo: halkeye/glossary-bot
+      envs:
+        - key: SLACK_APP_TOKEN
+          scope: RUN_TIME
+          value: ""
+          type: SECRET
+        - key: SLACK_BOT_TOKEN
+          scope: RUN_TIME
+          value: ""
+          type: SECRET
+        - key: SLACK_SIGNING_SECRET
+          scope: RUN_TIME
+          value: ""
+          type: SECRET
+        - key: DATABASE_URL
+          scope: RUN_TIME
+          value: ${glossary-bot-db.DATABASE_URL}
+  databases:
+    - name: glossary-bot-db
