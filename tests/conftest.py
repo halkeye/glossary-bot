@@ -1,22 +1,44 @@
 import pytest
+from os import environ
 
 from unittest import TestCase
 from pytest_mock_resources import create_postgres_fixture
+from sqlalchemy import create_engine
 
 from sqlalchemy.orm import Session
-from gloss.models import Definition, Interaction, Base
+from sqlalchemy.orm import declarative_base
+from gloss.models import Definition, Interaction
 from gloss.bot import Bot
 
-alembic_engine = create_postgres_fixture(Base)
+pg = create_postgres_fixture(declarative_base())
 
 @pytest.fixture
-def alembic_config(alembic_engine):
-    """Override this fixture to configure the exact alembic context setup required.
+def alembic_engine(pg):
+    """Override this fixture to provide pytest-alembic powered tests with a database handle.
     """
-    return { 'sqlalchemy.url': alembic_engine.url.render_as_string(hide_password=False) }
+    if environ.get('TEST_DATABASE_URL'):
+        db_url = environ.get('TEST_DATABASE_URL', 'postgresql:///glossary-bot-test')
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql://", 1)
+        environ['DATABASE_URL'] = db_url
+        return create_engine(db_url)
+    return pg
+
+# @pytest.fixture
+# def alembic_config(alembic_engine):
+#     """Override this fixture to configure the exact alembic context setup required.
+#     """
+#     return Config(
+#          config_options={
+#              'sqlalchemy.url': alembic_engine.url.render_as_string(hide_password=False)
+#          }
+#     )
 
 @pytest.fixture
-def db_session(alembic_engine):
+def db_session(alembic_engine, alembic_runner):
+    environ['DATABASE_URL'] = alembic_engine.url.render_as_string(hide_password=False)
+    alembic_runner.migrate_up_to('heads')
+
     session = Session(alembic_engine)
     session.query(Interaction).delete()
     session.query(Definition).delete()
@@ -25,7 +47,6 @@ def db_session(alembic_engine):
 
     session.rollback()
     session.close()
-
 
 @pytest.fixture
 def bot(db_session):
