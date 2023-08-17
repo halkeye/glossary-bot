@@ -23,7 +23,7 @@ if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 def authorize(enterprise_id, team_id, user_id, client: WebClient, logger):
-    logger.info(f"{enterprise_id},{team_id},{user_id}")
+    logger.info(f"enterprise_id={enterprise_id},team_id={team_id},user_id={user_id}")
     # You can implement your own logic here
     token = os.environ["SLACK_BOT_TOKEN"]
     return AuthorizeResult.from_auth_test_response(
@@ -56,7 +56,7 @@ def glossary_command(ack, respond, body):
         text: the text that was sent along with the command (like everything after '/gloss ')
     '''
     try:
-        logger.info(body)
+        logger.debug(body)
         with Session(engine) as session:
             bot = Bot(bot_name="Glossary Bot", session=session)
             ack()
