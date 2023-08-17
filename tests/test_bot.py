@@ -275,7 +275,7 @@ class TestBot:
 
         # now delete the value and verify that it's gone
         robo_response = handle_glossary(text="delete EW")
-        assert "has deleted the definition for" in json.dumps(robo_response)
+        assert "The definition for *EW* has been deleted, which was *Eligibility Worker*" == robo_response
 
         definition_check = db_session.query(Definition).filter(filter).first()
         assert definition_check is None

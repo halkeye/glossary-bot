@@ -353,16 +353,13 @@ class Bot:
             # verify that the definition is in the database
             entry = self.query_definition(delete_term)
             if not entry:
-                return f"Sorry, but *{self.bot_name}* has no definition for {make_bold(delete_term)}"
+                return f"Sorry, there is no definition for {make_bold(delete_term)}"
 
             # delete the definition from the database
-            try:
-                self.session.delete(entry)
-                self.session.commit()
-            except Exception as e:
-                return f"Sorry, but *{self.bot_name}* was unable to delete that definition: {e.message}, {e.args}"
+            self.session.delete(entry)
+            self.session.commit()
 
-            return f"*{self.bot_name}* has deleted the definition for {make_bold(delete_term)}, which was {make_bold(entry.definition)}"
+            return f"The definition for {make_bold(delete_term)} has been deleted, which was {make_bold(entry.definition)}"
 
         #
         # SEARCH for a string
