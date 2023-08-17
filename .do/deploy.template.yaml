@@ -1,7 +1,7 @@
-features:
-  - buildpack-stack=ubuntu-22
 spec:
   name: glossary-bot
+  features:
+    - buildpack-stack=ubuntu-22
   workers:
     - name: glossary-bot
       environment_slug: python
