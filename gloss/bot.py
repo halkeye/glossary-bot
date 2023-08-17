@@ -210,8 +210,8 @@ class Bot:
         like_matches = self.session.query(Definition).filter(Definition.term.ilike(f"%{stripped_term}%")).order_by(Definition.term.desc())
         like_results = [entry.term for entry in like_matches]
 
-        all_rows = {row.term:row.definition for row in self.session.query(Definition).all()}
-        fuzzy_results = [result[2] for result in filter(lambda result: result[1] >= MAX_CONFIDENCE, process.extract(term, all_rows, limit=20))]
+        all_rows = {row.term:row.definition for row in self.session.query(Definition).order_by(Definition.term.asc()).all()}
+        fuzzy_results = [result[2] for result in sorted(filter(lambda result: result[1] >= MAX_CONFIDENCE, process.extract(term, all_rows, limit=20)), key=lambda result: result[1])]
 
         results = list(fuzzy_results)
         for check_term in like_results:
