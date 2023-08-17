@@ -1,2 +1,1 @@
-__all__ = ["views", "errors", "models"]
-
+__all__ = ["bot", "errors", "models"]
