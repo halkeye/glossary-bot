@@ -1,6 +1,8 @@
+features:
+  - buildpack-stack=ubuntu-22
 spec:
   name: glossary-bot
-  services:
+  workers:
     - name: glossary-bot
       environment_slug: python
       build_command: pip install .
