@@ -3,6 +3,7 @@ spec:
   services:
     - name: glossary-bot
       environment_slug: python
+      build_command: pip install .
       run_command: alembic upgrade head && python app.py
       source_dir: /
       git:
