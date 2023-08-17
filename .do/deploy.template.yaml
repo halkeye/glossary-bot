@@ -8,8 +8,9 @@ spec:
       build_command: pip install .
       run_command: alembic upgrade head && python app.py
       source_dir: /
-      git:
+      github:
         branch: master
+        deploy_on_push: true
         repo: halkeye/glossary-bot
       envs:
         - key: SLACK_APP_TOKEN
