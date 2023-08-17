@@ -78,10 +78,10 @@ def glossary_mention(client, event, say):
             return
 
         bot_info = client.users_info(user=result.group(1))
-        if bot_info['ok'] != True:
+        if not bot_info['ok']:
             raise RuntimeError("Unable to look up bot")
         user_info = client.users_info(user=event['user'])
-        if user_info['ok'] != True:
+        if not user_info['ok']:
             raise RuntimeError("Unable to look up user")
 
         with Session(engine) as session:

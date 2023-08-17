@@ -3,7 +3,7 @@ import re
 import logging
 from thefuzz import process
 from .models import Definition, Interaction
-from sqlalchemy import func, distinct, sql
+from sqlalchemy import func, distinct
 from datetime import datetime
 
 STATS_CMDS = ("stats",)

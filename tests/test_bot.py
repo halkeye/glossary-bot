@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 import json
-import pytest
 
 from . import conftest  # noqa: F401
 

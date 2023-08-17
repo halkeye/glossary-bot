@@ -30,6 +30,7 @@ dependencies = [
   "pytest==7.4.0",
   "pytest-mock-resources==2.9.1",
   "python_on_whales==0.64.0",
+  "ruff==0.0.284"
 ]
 
 [tool.setuptools.packages.find]
@@ -39,7 +40,8 @@ where = ["gloss"]  # ["."] by default
 [tool.ruff]
 ignore = ["E501"]
 exclude = [
-  "migrations"
+  "migrations",
+  "alembic/versions"
 ]
 
 [tool.black]
