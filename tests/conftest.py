@@ -1,7 +1,6 @@
 import pytest
 
 from unittest import TestCase
-from pytest_alembic.config import Config
 from pytest_mock_resources import create_postgres_fixture
 
 from sqlalchemy.orm import Session
@@ -14,11 +13,7 @@ alembic_engine = create_postgres_fixture(Base)
 def alembic_config(alembic_engine):
     """Override this fixture to configure the exact alembic context setup required.
     """
-    return Config(
-         config_options={
-             'sqlalchemy.url': alembic_engine.url.render_as_string(hide_password=False)
-         }
-    )
+    return { 'sqlalchemy.url': alembic_engine.url.render_as_string(hide_password=False) }
 
 @pytest.fixture
 def db_session(alembic_engine):
