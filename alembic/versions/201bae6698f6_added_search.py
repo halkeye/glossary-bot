@@ -15,6 +15,8 @@ import sqlalchemy as sa
 
 def upgrade():
     db_bind = op.get_bind()
+    if db_bind.engine.name != 'postgresql':
+        pass
     #
     # Replace the index for terms with one including varchar_pattern_ops
     #
@@ -74,6 +76,8 @@ def upgrade():
 
 def downgrade():
     db_bind = op.get_bind()
+    if db_bind.engine.name != 'postgresql':
+        pass
     #
     # Revert the terms index to the original style
     #
