@@ -17,18 +17,18 @@ def upgrade():
     op.create_table('interactions',
                     sa.Column('id', sa.Integer(), nullable=False),
                     sa.Column('creation_date', sa.DateTime(), nullable=True),
-                    sa.Column('user', sa.Unicode(), nullable=True),
-                    sa.Column('term', sa.Unicode(), nullable=True),
-                    sa.Column('action', sa.Unicode(), nullable=True),
+                    sa.Column('user', sa.Unicode(255), nullable=True),
+                    sa.Column('term', sa.Unicode(255), nullable=True),
+                    sa.Column('action', sa.Unicode(255), nullable=True),
                     sa.PrimaryKeyConstraint('id'))
     op.create_index(op.f('ix_interactions_action'), 'interactions', ['action'], unique=False)
 
     op.create_table('definitions',
                     sa.Column('id', sa.Integer(), nullable=False),
                     sa.Column('creation_date', sa.DateTime(), nullable=True),
-                    sa.Column('term', sa.Unicode(), nullable=True),
-                    sa.Column('definition', sa.Unicode(), nullable=True),
-                    sa.Column('user', sa.Unicode(), nullable=True),
+                    sa.Column('term', sa.Unicode(255), nullable=True),
+                    sa.Column('definition', sa.Unicode(255), nullable=True),
+                    sa.Column('user', sa.Unicode(255), nullable=True),
                     sa.PrimaryKeyConstraint('id'))
     op.create_index(op.f('ix_definitions_term'), 'definitions', ['term'], unique=False)
 

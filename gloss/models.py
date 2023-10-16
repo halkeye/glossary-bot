@@ -12,9 +12,9 @@ class Definition(Base):
     # Columns
     id = Column(Integer, primary_key=True)
     creation_date = Column(DateTime(), default=datetime.utcnow)
-    term = Column(Unicode(), index=True)
-    definition = Column(Unicode())
-    user_name = Column(Unicode())
+    term = Column(Unicode(255), index=True)
+    definition = Column(Unicode(255))
+    user_name = Column(Unicode(255))
 
     def __repr__(self):
         return '<Term: {}, Definition: {}>'.format(self.term, self.definition)
@@ -26,9 +26,9 @@ class Interaction(Base):
     # Columns
     id = Column(Integer, primary_key=True)
     creation_date = Column(DateTime(), default=datetime.utcnow)
-    user_name = Column(Unicode())
-    term = Column(Unicode())
-    action = Column(Unicode(), index=True)
+    user_name = Column(Unicode(255))
+    term = Column(Unicode(255))
+    action = Column(Unicode(255), index=True)
 
     def __repr__(self):
         return '<Action: {}, Date: {}>'.format(self.action, self.creation_date)

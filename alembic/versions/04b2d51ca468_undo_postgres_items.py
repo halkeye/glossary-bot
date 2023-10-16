@@ -18,7 +18,7 @@ depends_on = None
 def upgrade() -> None:
     db_bind = op.get_bind()
     if db_bind.engine.name != 'postgresql':
-        pass
+        return
 
     #
     # Revert the terms index to the original style
@@ -58,7 +58,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     db_bind = op.get_bind()
     if db_bind.engine.name != 'postgresql':
-        pass
+        return
     #
     # Replace the index for terms with one including varchar_pattern_ops
     #
