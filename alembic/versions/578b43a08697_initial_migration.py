@@ -27,7 +27,7 @@ def upgrade():
                     sa.Column('id', sa.Integer(), nullable=False),
                     sa.Column('creation_date', sa.DateTime(), nullable=True),
                     sa.Column('term', sa.Unicode(255), nullable=True),
-                    sa.Column('definition', sa.Unicode(255), nullable=True),
+                    sa.Column('definition', sa.UnicodeText, nullable=True),
                     sa.Column('user', sa.Unicode(255), nullable=True),
                     sa.PrimaryKeyConstraint('id'))
     op.create_index(op.f('ix_definitions_term'), 'definitions', ['term'], unique=False)
