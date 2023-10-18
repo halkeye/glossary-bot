@@ -91,3 +91,7 @@ exclude = [".gitignore","venv"]
 
 [build-system]
 requires = ["setuptools"]
+
+[zest.releaser]
+tag-format = "v{version}"
+release = false
