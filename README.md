@@ -29,3 +29,10 @@ From the [Build Apps](https://api.slack.com/apps/) screen:
 3) Click **OAuth && Permissions**. Copy the `Bot User OAuth Token` and paste the token into `SLACK_BOT_TOKEN` variable in Digital Ocean
 
 And now you're good to get glossing! Open up Slack and type `/glossary help` to start.
+
+## Releasing
+
+```
+pip install '.[dev]'
+bump-my-version bump [patch|minor|major]
+```
