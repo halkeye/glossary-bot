@@ -1,8 +1,8 @@
 Changelog for glossary-bot
 ===========================
 
-## Unreleased
-[Compare the full difference.](https://github.com/halkeye/\glossary-bot/compare/2.0.1...HEAD)
+## 2.0.2
+[Compare the full difference.](https://github.com/halkeye/\glossary-bot/compare/2.0.1...2.0.2)
 
 - no functional changes, just configuring bump-my-version
 
