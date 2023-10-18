@@ -2,6 +2,7 @@
 name = "glossary-bot"
 description = "Glossary Slack Bot"
 requires-python = ">=3"
+dynamic = ["version", "readme"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -66,6 +67,7 @@ test = [
 
 [tool.setuptools.dynamic]
 version = {attr = "gloss.__version__"}
+readme = {file = "README.md"}
 
 [tool.setuptools.packages.find]
 # All the following settings are optional:
