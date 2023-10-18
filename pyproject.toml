@@ -26,6 +26,11 @@ keywords = [
   "bolt",
   "dictionary"
 ]
+authors = [
+  {name = "Tomas Apodaca", email = "tma@angrymonkey.com"},
+  {name = "Ben Sheldon", email = "bensheldon@gmail.com"},
+  {name = "Gavin Mogan", email = "python@gavinmogan.com"}
+]
 maintainers = [
   {name = "Gavin Mogan", email = "python@gavinmogan.com"}
 ]
