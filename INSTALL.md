@@ -13,7 +13,7 @@ Glossary Bot is a [Flask](http://flask.pocoo.org/) app built to run on [Heroku](
 To install locally, clone this repository and cd into the resulting directory:
 
 ```
-git clone git@github.com:codeforamerica/glossary-bot.git
+git clone git@github.com:halkeye/glossary-bot.git
 cd glossary-bot
 ```
 
@@ -32,7 +32,7 @@ source venv-glossary-bot/bin/activate
 Install the required packages with pip:
 
 ```
-pip install -r requirements.txt
+pip install .
 ```
 
 Create the production [PostgreSQL](https://github.com/codeforamerica/howto/blob/master/PostgreSQL.md) database:
