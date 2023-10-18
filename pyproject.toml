@@ -95,3 +95,6 @@ requires = ["setuptools"]
 [zest.releaser]
 tag-format = "v{version}"
 release = false
+
+[tool.check-manifest]
+ignore = ["*"]
