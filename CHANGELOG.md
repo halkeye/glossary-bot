@@ -1,7 +1,7 @@
 Changelog for glossary-bot
 ===========================
 
-2.0.0 (unreleased)
+## 2.0.0 (2023-10-17)
 ------------------
 
 - Major refactor to support mysql as well as postgres
