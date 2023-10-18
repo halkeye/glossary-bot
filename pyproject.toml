@@ -1,6 +1,5 @@
 [project]
 name = "glossary-bot"
-version = "2.0.1"
 description = "Glossary Slack Bot"
 requires-python = ">=3"
 classifiers = [
@@ -42,7 +41,19 @@ dependencies = [
   "slack-bolt==1.18.0",
   "thefuzz==0.19.0",
   "thefuzz[speedup]==0.19.0",
-  ## Test
+]
+
+[project.urls]
+documentation = "https://github.com/halkeye/glossary-bot"
+repository = "https://github.com/halkeye/glossary-bot"
+changelog = "https://github.com/halkeye/glossary-botblob/master/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = [
+  "bump-my-version==0.11.0"
+]
+
+test = [
   "responses==0.23.3",
   "flake8==6.0.0",
   "black==22.10.0",
@@ -53,10 +64,8 @@ dependencies = [
   "ruff==0.0.284"
 ]
 
-[project.urls]
-documentation = "https://github.com/halkeye/glossary-bot"
-repository = "https://github.com/halkeye/glossary-bot"
-changelog = "https://github.com/halkeye/glossary-botblob/master/CHANGELOG.md"
+[tool.setuptools.dynamic]
+version = {attr = "gloss.__version__"}
 
 [tool.setuptools.packages.find]
 # All the following settings are optional:
@@ -92,9 +101,31 @@ exclude = [".gitignore","venv"]
 [build-system]
 requires = ["setuptools"]
 
-[zest.releaser]
-tag-format = "v{version}"
-release = false
+[tool.bumpversion]
+current_version = "2.0.1"
+commit = true
+commit_args = "--no-verify"
+tag = true
+tag_name = "v{new_version}"
+allow_dirty = true
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)(\\.(?P<dev>dev)\\d+\\+[-_a-zA-Z0-9]+)?"
+serialize = [
+    "{major}.{minor}.{patch}.{dev}{distance_to_latest_tag}+{short_branch_name}",
+    "{major}.{minor}.{patch}"
+]
+message = "Version updated from {current_version} to {new_version}"
 
-[tool.check-manifest]
-ignore = ["*"]
+[tool.bumpversion.parts.dev]
+values = ["release", "dev"]
+
+[[tool.bumpversion.files]]
+filename = "gloss/__init__.py"
+
+[[tool.bumpversion.files]]
+filename = "CHANGELOG.md"
+search = "Unreleased"
+
+[[tool.bumpversion.files]]
+filename = "CHANGELOG.md"
+search = "{current_version}...HEAD"
+replace = "{current_version}...{new_version}"

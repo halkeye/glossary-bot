@@ -1,10 +1,9 @@
 Changelog for glossary-bot
 ===========================
 
-## 2.0.1 (2023-10-17)
----------------------
+## Unreleased
 
-- no functional changes, just configuring zest releaser
+- no functional changes, just configuring bump-my-version
 
 
 ## 2.0.0 (2023-10-17)
