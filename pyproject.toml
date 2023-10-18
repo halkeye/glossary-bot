@@ -102,7 +102,7 @@ exclude = [".gitignore","venv"]
 requires = ["setuptools"]
 
 [tool.bumpversion]
-current_version = "2.0.2"
+current_version = "2.0.3"
 commit = true
 commit_args = "--no-verify"
 tag = true
