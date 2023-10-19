@@ -39,7 +39,6 @@ And now you're good to get glossing! Open up Slack and type `/glossary help` to 
 
 ## Releasing
 
-```
-npm install
-npx semantic-release
-```
+Run the release job
+
+https://github.com/halkeye/glossary-bot/actions/workflows/release.yaml
