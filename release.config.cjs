@@ -50,7 +50,7 @@ module.exports = {
     [
       "@semantic-release/github",
       {
-        "addReleases": true
+        "addReleases": "bottom"
       }
     ]
   ]
