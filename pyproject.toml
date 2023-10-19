@@ -58,7 +58,7 @@ dev = [
 test = [
   "responses==0.23.3",
   "flake8==6.0.0",
-  "black==22.10.0",
+  "black==22.12.0",
   "pytest_alembic==0.10.7",
   "pytest==7.4.0",
   "pytest-mock-resources==2.9.1",
