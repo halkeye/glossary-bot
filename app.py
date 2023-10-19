@@ -41,7 +41,7 @@ app = App(
 
 engine = create_engine(database_url, echo=False)
 
-@app.command("/glossary")
+@app.command(os.getenv('SLASH_COMMAND', "/glossary"))
 def glossary_command(ack, respond, body):
     '''
     values posted by Slack:
