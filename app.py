@@ -39,7 +39,7 @@ app = App(
     authorize=authorize,
 )
 
-engine = create_engine(database_url, echo=False)
+engine = create_engine(database_url, echo=False, pool_recycle=3600)
 
 @app.command(os.getenv('SLASH_COMMAND', "/glossary"))
 def glossary_command(ack, respond, body):
