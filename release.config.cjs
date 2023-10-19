@@ -27,7 +27,7 @@ module.exports = {
             "to": "__version__: str = \"${nextRelease.version}\"",
             "results": [
               {
-                "file": "foo/__init__.py",
+                "file": "gloss/__init__.py",
                 "hasChanged": true,
                 "numMatches": 1,
                 "numReplacements": 1
