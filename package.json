@@ -1,0 +1,9 @@
+{
+  "name": "glossary-bot-tools",
+  "private": true,
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "semantic-release": "^22.0.5",
+    "semantic-release-replace-plugin": "^1.2.7"
+  }
+}
