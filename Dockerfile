@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.12
 
 ARG TINI_VERSION=v0.18.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/bin/tini
