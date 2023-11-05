@@ -62,7 +62,7 @@ test = [
   "pytest_alembic==0.10.7",
   "pytest==7.4.3",
   "pytest-mock-resources==2.9.2",
-  "python_on_whales==0.65.0",
+  "python_on_whales==0.66.0",
   "ruff==0.0.284"
 ]
 
