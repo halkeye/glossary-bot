@@ -22,6 +22,7 @@ database_url = os.environ["DATABASE_URL"]
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
+
 def authorize(enterprise_id, team_id, user_id, client: WebClient, logger):
     logger.info(f"enterprise_id={enterprise_id},team_id={team_id},user_id={user_id}")
     # You can implement your own logic here
@@ -30,6 +31,7 @@ def authorize(enterprise_id, team_id, user_id, client: WebClient, logger):
         auth_test_response=client.auth_test(token=token),
         bot_token=token,
     )
+
 
 app = App(
     logger=logger,
@@ -41,9 +43,10 @@ app = App(
 
 engine = create_engine(database_url, echo=False, pool_recycle=3600)
 
-@app.command(os.getenv('SLASH_COMMAND', "/glossary"))
+
+@app.command(os.getenv("SLASH_COMMAND", "/glossary"))
 def glossary_command(ack, respond, body):
-    '''
+    """
     values posted by Slack:
         token: the authenticaton token from Slack; available in the integration settings.
         team_domain: the name of the team (i.e. what shows up in the URL: {xxx}.slack.com)
@@ -54,20 +57,23 @@ def glossary_command(ack, respond, body):
         user_id: unique ID for the user that sent the message
         command: the command that was used to generate the request (like '/gloss')
         text: the text that was sent along with the command (like everything after '/gloss ')
-    '''
+    """
     try:
         logger.debug(body)
         with Session(engine) as session:
             bot = Bot(bot_name="Glossary Bot", session=session)
             ack()
-            respond(bot.handle_glossary(
-                user_name=body['user_name'],
-                slash_command=body['command'],
-                text=body['text']
-            ))
+            respond(
+                bot.handle_glossary(
+                    user_name=body["user_name"],
+                    slash_command=body["command"],
+                    text=body["text"],
+                )
+            )
     except Exception as e:
         respond(f"An exception happened: {e}")
         raise
+
 
 @app.event("app_mention")
 def glossary_mention(client, event, say):
@@ -78,24 +84,25 @@ def glossary_mention(client, event, say):
             return
 
         bot_info = client.users_info(user=result.group(1))
-        if not bot_info['ok']:
+        if not bot_info["ok"]:
             raise RuntimeError("Unable to look up bot")
-        user_info = client.users_info(user=event['user'])
-        if not user_info['ok']:
+        user_info = client.users_info(user=event["user"])
+        if not user_info["ok"]:
             raise RuntimeError("Unable to look up user")
 
         with Session(engine) as session:
             bot = Bot(bot_name="Glossary Bot", session=session)
             response = bot.handle_glossary(
-                user_name=user_info['user']['name'],
+                user_name=user_info["user"]["name"],
                 slash_command=f"@{bot_info['user']['name']}",
-                text=result.group(2)
+                text=result.group(2),
             )
             print(json.dumps(response))
             say(response, thread_ts=event.get("thread_ts"))
     except Exception as e:
         say(f"An exception happened: {e}")
         raise
+
 
 if __name__ == "__main__":
     # export SLACK_APP_TOKEN=xapp-***

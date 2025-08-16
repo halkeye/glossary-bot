@@ -23,7 +23,9 @@ engine = create_engine(database_url)
 results = {"definitions": [], "interactions": []}
 with engine.connect() as conn:
     with Session(engine) as session:
-        for row in session.query(Definition).order_by(Definition.creation_date.desc()).all():
+        for row in (
+            session.query(Definition).order_by(Definition.creation_date.desc()).all()
+        ):
             results["definitions"].append(
                 {
                     "id": row.id,
@@ -34,7 +36,9 @@ with engine.connect() as conn:
                 }
             )
 
-        for row in session.query(Interaction).order_by(Interaction.creation_date.desc()).all():
+        for row in (
+            session.query(Interaction).order_by(Interaction.creation_date.desc()).all()
+        ):
             results["interactions"].append(
                 {
                     "id": row.id,
