@@ -73,15 +73,6 @@ readme = {file = "README.md"}
 # All the following settings are optional:
 where = ["gloss"]  # ["."] by default
 
-[tool.ruff]
-select = ["E", "F"]
-target-version = "py310"
-ignore = ["E501"]
-exclude = [
-  "migrations",
-  "alembic/versions"
-]
-
 [tool.black]
 line-length = 125
 
@@ -131,3 +122,12 @@ search = "Unreleased"
 filename = "CHANGELOG.md"
 search = "{current_version}...HEAD"
 replace = "{current_version}...{new_version}"
+
+[lint]
+select = ["E", "F"]
+targetVersion = "py312"
+ignore = ["E501"]
+exclude = [
+  "migrations",
+  "alembic/versions"
+]
