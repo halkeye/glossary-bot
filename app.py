@@ -1,17 +1,16 @@
 import json
-import os
 import logging
+import os
 import re
 
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_bolt.authorization import AuthorizeResult
 from slack_sdk.web.client import WebClient
-
-from gloss.bot import Bot
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+
+from gloss.bot import Bot
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -48,7 +47,7 @@ engine = create_engine(database_url, echo=False, pool_recycle=3600, pool_pre_pin
 def glossary_command(ack, respond, body):
     """
     values posted by Slack:
-        token: the authenticaton token from Slack; available in the integration settings.
+        token: the authentication token from Slack; available in the integration settings.
         team_domain: the name of the team (i.e. what shows up in the URL: {xxx}.slack.com)
         team_id: unique ID for the team
         channel_name: the name of the channel the message was sent from

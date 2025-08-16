@@ -1,10 +1,12 @@
+import logging
 import random
 import re
-import logging
-from thefuzz import process
-from .models import Definition, Interaction
-from sqlalchemy import func, distinct
 from datetime import datetime
+
+from sqlalchemy import distinct, func
+from thefuzz import process
+
+from .models import Definition, Interaction
 
 STATS_CMDS = ("stats",)
 RECENT_CMDS = ("learnings", "recent")
@@ -184,7 +186,7 @@ class Bot:
         order_random = func.random()
         order_alphabetical = Definition.term
         order_function = order_descending
-        prefix_singluar = "I recently learned the definition for"
+        prefix_singular = "I recently learned the definition for"
         prefix_plural = "I recently learned definitions for"
         no_definitions_text = "I haven't learned any definitions yet."
         if sort_order == "random":
@@ -193,7 +195,7 @@ class Bot:
             order_function = order_alphabetical
 
         if sort_order == "random" or sort_order == "alpha" or offset > 0:
-            prefix_singluar = "I know the definition for"
+            prefix_singular = "I know the definition for"
             prefix_plural = "I know definitions for"
 
         # if how_many is 0, ignore offset and return all results
@@ -221,7 +223,7 @@ class Bot:
         if not definitions:
             return no_definitions_text, no_definitions_text
 
-        wording = prefix_plural if len(definitions) > 1 else prefix_singluar
+        wording = prefix_plural if len(definitions) > 1 else prefix_singular
         plain_text = "{}: {}".format(
             wording, ", ".join([item.term for item in definitions])
         )
@@ -344,7 +346,7 @@ class Bot:
         return message
 
     def set_definition_and_get_response(self, slash_command, command_params, user_name):
-        """Set the definition for the passed parameters and return the approriate responses"""
+        """Set the definition for the passed parameters and return the appropriate responses"""
         set_components = command_params.split("=", 1)
         set_term = set_components[0].strip()
         set_value = set_components[1].strip() if len(set_components) > 1 else ""

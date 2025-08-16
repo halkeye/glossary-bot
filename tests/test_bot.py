@@ -2,9 +2,9 @@
 # -*- coding: utf8 -*-
 import json
 
-from . import conftest  # noqa: F401
-
 from gloss.models import Definition, Interaction
+
+from . import conftest  # noqa: F401
 
 
 class TestBot:
@@ -168,7 +168,7 @@ class TestBot:
         assert "because it's a reserved term" in json.dumps(robo_response)
 
     def test_get_definition(self, db_session, handle_glossary):
-        """We can succesfully set and get a definition from the bot"""
+        """We can successfully set and get a definition from the bot"""
         # set & test a definition
         handle_glossary(text="EW = Eligibility Worker")
 
@@ -189,7 +189,7 @@ class TestBot:
         assert interaction_check.action == "found"
 
     def test_get_definition_with_special_characters(self, db_session, handle_glossary):
-        """We can succesfully set and get a definition with special characters from the bot"""
+        """We can successfully set and get a definition with special characters from the bot"""
         # set & test a definition
         handle_glossary(text="EW = ™¥∑ø∂∆∫")
 
@@ -658,7 +658,7 @@ class TestBot:
         assert "I recently learned definitions for" in json.dumps(robo_response)
 
     def test_learnings_alternate_command_echoed(self, handle_glossary):
-        """The learnings alternate command is echoed in the bot's reponse"""
+        """The learnings alternate command is echoed in the bot's response"""
         alternate_action = "recent"
 
         robo_response = handle_glossary(text=alternate_action)

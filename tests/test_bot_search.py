@@ -59,7 +59,7 @@ class TestBotSearch:
         for post_match in randomized_matches:
             handle_glossary(text="{} = {}".format(post_match[0], post_match[1]))
 
-        # make some searchs and verify that they come back as expected
+        # make some searches and verify that they come back as expected
         robo_response = handle_glossary(text="search youth")
         assert "found *youth* in: *ACYF*, *TAY*" in robo_response
 
