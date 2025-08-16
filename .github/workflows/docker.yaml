@@ -1,15 +1,19 @@
-name: docker
+name: Docker
 
 on:
   push:
     branches:
-      - 'master'
+      - master
     tags:
       - 'v*'
+  pull_request:
+    branches:
+      - master
   workflow_dispatch:
 
 jobs:
   docker:
+
     runs-on: ubuntu-latest
     permissions:
       contents: read

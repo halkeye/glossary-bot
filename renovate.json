@@ -12,6 +12,7 @@
     ":timezone(America/Vancouver)",
     "helpers:pinGitHubActionDigests"
   ],
+  "forkProcessing": "enabled",
   "packageRules": [
     {
       "matchUpdateTypes": [
