@@ -36,7 +36,7 @@ maintainers = [
 dependencies = [
   "gunicorn==21.2.0",
   "alembic==1.12.1",
-  "psycopg2==2.9.9",
+  "psycopg2-binary==2.9.9",
   "mysqlclient==2.2.0",
   "slack-bolt==1.18.1",
   "thefuzz==0.20.0",
