@@ -35,12 +35,12 @@ maintainers = [
 ]
 dependencies = [
   "gunicorn==21.2.0",
-  "alembic==1.12.1",
-  "psycopg2-binary==2.9.9",
-  "mysqlclient==2.2.0",
-  "slack-bolt==1.18.1",
-  "thefuzz==0.20.0",
-  "thefuzz[speedup]==0.20.0",
+  "alembic==1.16.4",
+  "psycopg2-binary==2.9.10",
+  "mysqlclient==2.2.7",
+  "slack-bolt==1.23.0",
+  "thefuzz==0.22.1",
+  "thefuzz[speedup]==0.22.1",
 ]
 
 [project.urls]
@@ -50,19 +50,19 @@ changelog = "https://github.com/halkeye/glossary-botblob/master/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
-  "bump-my-version==0.15.0",
-  "generate-changelog==0.10.0"
+  "bump-my-version==0.33.0",
+  "generate-changelog==0.16.0"
 ]
 
 test = [
-  "responses==0.24.0",
+  "responses==0.25.8",
   "flake8==6.1.0",
-  "black==23.11.0",
-  "pytest_alembic==0.10.7",
-  "pytest==7.4.3",
-  "pytest-mock-resources==2.9.2",
-  "python_on_whales==0.68.0",
-  "ruff==0.1.7"
+  "black==23.12.1",
+  "pytest_alembic==0.12.1",
+  "pytest==7.4.4",
+  "pytest-mock-resources==2.12.2",
+  "python_on_whales==0.78.0",
+  "ruff==0.12.9"
 ]
 
 [tool.setuptools.dynamic]
