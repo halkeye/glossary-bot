@@ -60,9 +60,9 @@ test = [
   "black==25.1.0",
   "pytest_alembic==0.12.1",
   "pytest==8.4.2",
-  "pytest-mock-resources==2.12.2",
+  "pytest-mock-resources==2.12.3",
   "python_on_whales==0.78.0",
-  "ruff==0.12.12"
+  "ruff==0.13.0"
 ]
 
 [tool.setuptools.dynamic]
