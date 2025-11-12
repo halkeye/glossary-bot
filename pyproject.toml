@@ -59,7 +59,7 @@ test = [
   "flake8==7.3.0",
   "black==25.11.0",
   "pytest_alembic==0.12.1",
-  "pytest==8.4.2",
+  "pytest==9.0.1",
   "pytest-mock-resources==2.12.4",
   "python_on_whales==0.79.0",
   "ruff==0.14.4"
