@@ -50,7 +50,7 @@ changelog = "https://github.com/halkeye/glossary-botblob/master/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
-  "bump-my-version==1.2.5",
+  "bump-my-version==1.2.6",
   "generate-changelog==0.16.0"
 ]
 
@@ -62,7 +62,7 @@ test = [
   "pytest==9.0.2",
   "pytest-mock-resources==2.12.4",
   "python_on_whales==0.79.0",
-  "ruff==0.14.10"
+  "ruff==0.14.11"
 ]
 
 [tool.setuptools.dynamic]
