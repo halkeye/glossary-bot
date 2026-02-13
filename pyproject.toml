@@ -35,9 +35,9 @@ maintainers = [
 ]
 dependencies = [
   "gunicorn==24.1.1",
-  "alembic==1.18.3",
+  "alembic==1.18.4",
   "psycopg2-binary==2.9.11",
-  "mysqlclient==2.2.7",
+  "mysqlclient==2.2.8",
   "slack-bolt==1.27.0",
   "thefuzz==0.22.1",
   "thefuzz[speedup]==0.22.1",
@@ -62,7 +62,7 @@ test = [
   "pytest==9.0.2",
   "pytest-mock-resources==2.12.4",
   "python_on_whales==0.80.0",
-  "ruff==0.15.0"
+  "ruff==0.15.1"
 ]
 
 [tool.setuptools.dynamic]
