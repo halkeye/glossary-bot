@@ -50,7 +50,7 @@ changelog = "https://github.com/halkeye/glossary-botblob/master/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
-  "bump-my-version==1.2.6",
+  "bump-my-version==1.2.7",
   "generate-changelog==0.16.0"
 ]
 
