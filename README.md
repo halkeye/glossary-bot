@@ -12,7 +12,7 @@ All Configuration is done by env variables
 
  * DATABASE_URL - Database url. Only postgresql:// and mysql:// are tested
  * SLACK_APP_TOKEN - [Slack app](https://api.slack.com/apps/) token.
-    * Click **Generate Token and Scopes**. Make sure `connections:write` and `authorizations:read` scopes are set. Copy this into `SLACK_APP_TOKEN` variable in Digital Ocean
+    * Click **Basic Information > App-Level Tokens > Generate Token and Scopes**. Make sure `connections:write` and `authorizations:read` scopes are set. Copy this into `SLACK_APP_TOKEN` variable in Digital Ocean
  * SLACK_BOT_TOKEN - [Slack app](https://api.slack.com/apps/) bot token.
     * Click **OAuth && Permissions**. Copy the `Bot User OAuth Token` and paste the token into `SLACK_BOT_TOKEN` variable in Digital Ocean
  * SLACK_SIGNING_SECRET - [Slack app](https://api.slack.com/apps/) signing token.
