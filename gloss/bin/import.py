@@ -28,6 +28,7 @@ with engine.connect() as conn:
         session.execute(delete(Definition))
         for row in results["definitions"]:
             session.add(Definition(**row))
+
         session.execute(delete(Interaction))
         for row in results["interactions"]:
             session.add(Interaction(**row))

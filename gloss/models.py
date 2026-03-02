@@ -1,7 +1,19 @@
 from datetime import datetime
-from sqlalchemy.orm import declarative_base
+
+import sqlalchemy.types as types
 from sqlalchemy import Column
-from sqlalchemy.types import Integer, DateTime, Unicode, UnicodeText
+from sqlalchemy.orm import declarative_base
+
+
+class LimitedLengthUnicode(types.TypeDecorator):
+    impl = types.Unicode
+
+    def process_bind_param(self, value, dialect):
+        return value[: self.impl.length]
+
+    def copy(self, **kwargs):
+        return LimitedLengthUnicode(self.impl.length)
+
 
 Base = declarative_base()
 
@@ -11,11 +23,11 @@ class Definition(Base):
 
     __tablename__ = "definitions"
     # Columns
-    id = Column(Integer, primary_key=True)
-    creation_date = Column(DateTime(), default=datetime.utcnow)
-    term = Column(Unicode(255), index=True)
-    definition = Column(UnicodeText)
-    user_name = Column(Unicode(255))
+    id = Column(types.Integer, primary_key=True)
+    creation_date = Column(types.DateTime(), default=datetime.utcnow)
+    term = Column(LimitedLengthUnicode(255), index=True)
+    definition = Column(types.UnicodeText)
+    user_name = Column(types.Unicode(255))
 
     def __repr__(self):
         return "<Term: {}, Definition: {}>".format(self.term, self.definition)
@@ -26,11 +38,11 @@ class Interaction(Base):
 
     __tablename__ = "interactions"
     # Columns
-    id = Column(Integer, primary_key=True)
-    creation_date = Column(DateTime(), default=datetime.utcnow)
-    user_name = Column(Unicode(255))
-    term = Column(Unicode(255))
-    action = Column(UnicodeText, index=True)
+    id = Column(types.Integer, primary_key=True)
+    creation_date = Column(types.DateTime(), default=datetime.utcnow)
+    user_name = Column(types.Unicode(255))
+    term = Column(LimitedLengthUnicode(255))
+    action = Column(types.UnicodeText, index=True)
 
     def __repr__(self):
         return "<Action: {}, Date: {}>".format(self.action, self.creation_date)
