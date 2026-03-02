@@ -7,6 +7,7 @@ from sqlalchemy.orm import declarative_base
 
 class LimitedLengthUnicode(types.TypeDecorator):
     impl = types.Unicode
+    cache_ok = types.Unicode.cache_ok
 
     def process_bind_param(self, value, dialect):
         return value[: self.impl.length]
