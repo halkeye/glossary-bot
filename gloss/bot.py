@@ -452,7 +452,7 @@ class Bot:
         #
 
         if command_action in HELP_CMDS or command_text.strip() == "":
-            return f"*{slash_command} _term_* to show the definition for a term\n*{slash_command} _term_ = _definition_* to set the definition for a term\n*{slash_command} _alias_ = see _term_* to set an alias for a term\n*{slash_command} delete _term_* to delete the definition for a term\n*{slash_command} stats* to show usage statistics\n*{slash_command} recent* to show recently defined terms\n*{slash_command} search _term_* to search terms and definitions\n*{slash_command} help* to see this message\n<https://github.com/codeforamerica/glossary-bot/issues|report bugs and request features>"
+            return f"*{slash_command} _term_* to show the definition for a term\n*{slash_command} _term_ = _definition_* to set the definition for a term\n*{slash_command} _alias_ = see _term_* to set an alias for a term\n*{slash_command} delete _term_* to delete the definition for a term\n*{slash_command} stats* to show usage statistics\n*{slash_command} recent* to show recently defined terms\n*{slash_command} search _term_* to search terms and definitions\n*{slash_command} help* to see this message\n<https://github.com/halkeye/glossary-bot/issues|report bugs and request features>"
 
         #
         # STATS
