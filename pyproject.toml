@@ -34,7 +34,7 @@ maintainers = [
   {name = "Gavin Mogan", email = "python@gavinmogan.com"}
 ]
 dependencies = [
-  "gunicorn==25.3.0",
+  "gunicorn==26.0.0",
   "alembic==1.18.5",
   "psycopg2-binary==2.9.12",
   "mysqlclient==2.2.8",
