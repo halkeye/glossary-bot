@@ -55,7 +55,7 @@ dev = [
 ]
 
 test = [
-  "responses==0.26.1",
+  "responses==0.26.2",
   "flake8==7.3.0",
   "black==26.5.1",
   "pytest_alembic==0.12.1",
