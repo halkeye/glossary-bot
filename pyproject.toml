@@ -62,7 +62,7 @@ test = [
   "pytest==9.1.1",
   "pytest-mock-resources==2.12.4",
   "python_on_whales==0.81.0",
-  "ruff==0.15.22"
+  "ruff==0.16.0"
 ]
 
 [tool.setuptools.dynamic]
