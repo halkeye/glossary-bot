@@ -238,7 +238,7 @@ class Bot:
             self.session.add(Interaction(term=term, user_name=user_name, action=action))
             self.session.commit()
         except Exception:
-            pass
+            logger.exception("Exception occurred")
 
     def query_definition(self, term):
         """Query the definition for a term from the database"""
@@ -369,7 +369,7 @@ class Bot:
                 entry.term = set_term
                 entry.definition = set_value
                 entry.user_name = user_name
-                entry.creation_date = datetime.utcnow()
+                entry.creation_date = datetime.datetime.now(tz=datetime.timezone.utc)
 
                 self.session.add(entry)
                 self.session.commit()
