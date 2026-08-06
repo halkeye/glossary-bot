@@ -428,11 +428,11 @@ class TestBot:
 
         # get chronological learnings
         robo_response = handle_glossary(text="learnings")
-        assert ", ".join(map(lambda str: f"*{str}*", desc_check)) in robo_response
+        assert ", ".join(f"*{str}*" for str in desc_check) in robo_response
 
         # get alphabetical learnings
         robo_response = handle_glossary(text="learnings alpha")
-        assert ", ".join(map(lambda str: f"*{str}*", alpha_check)) in robo_response
+        assert ", ".join(f"*{str}*" for str in alpha_check) in robo_response
 
     def test_random_offset_learnings(self, db_session, handle_glossary):
         """An offset group of learnings are returned randomized"""
@@ -522,23 +522,23 @@ class TestBot:
 
         # get all learnings
         robo_response = handle_glossary(text="learnings all")
-        assert ", ".join(map(lambda str: f"*{str}*", check)) in json.dumps(
+        assert ", ".join(f"*{str}*" for str in check) in json.dumps(
             robo_response
         )
 
         # if 'all' is part of the command, other limiting params are ignored
         robo_response = handle_glossary(text="learnings all 5")
-        assert ", ".join(map(lambda str: f"*{str}*", check)) in json.dumps(
+        assert ", ".join(f"*{str}*" for str in check) in json.dumps(
             robo_response
         )
 
         robo_response = handle_glossary(text="learnings 5 3 all")
-        assert ", ".join(map(lambda str: f"*{str}*", check)) in json.dumps(
+        assert ", ".join(f"*{str}*" for str in check) in json.dumps(
             robo_response
         )
 
         robo_response = handle_glossary(text="learnings all 3 5")
-        assert ", ".join(map(lambda str: f"*{str}*", check)) in json.dumps(
+        assert ", ".join(f"*{str}*" for str in check) in json.dumps(
             robo_response
         )
 
@@ -577,7 +577,7 @@ class TestBot:
 
         # get some learnings
         robo_response = handle_glossary(text=f"learnings {limit}")
-        assert ", ".join(map(lambda str: f"*{str}*", check)) in json.dumps(
+        assert ", ".join(f"*{str}*" for str in check) in json.dumps(
             robo_response
         )
 
@@ -620,7 +620,7 @@ class TestBot:
 
         # get some learnings
         robo_response = handle_glossary(text=f"learnings {limit} {offset}")
-        assert ", ".join(map(lambda str: f"*{str}*", check)) in json.dumps(
+        assert ", ".join(f"*{str}*" for str in check) in json.dumps(
             robo_response
         )
 

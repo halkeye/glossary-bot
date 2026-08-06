@@ -469,7 +469,7 @@ class Bot:
         if command_action in RECENT_CMDS:
             # extract parameters
             recent_args = parse_learnings_params(command_params)
-            learnings_plain_text, learnings_rich_text = self.get_learnings(
+            _learnings_plain_text, learnings_rich_text = self.get_learnings(
                 **recent_args
             )
             return learnings_rich_text
