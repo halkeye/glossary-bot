@@ -24,14 +24,13 @@ engine = create_engine(database_url)
 
 results = json.load(sys.stdin)
 
-with engine.connect() as conn:
-    with Session(engine) as session:
-        session.execute(delete(Definition))
-        for row in results["definitions"]:
-            session.add(Definition(**row))
+with engine.connect() as conn, Session(engine) as session:
+    session.execute(delete(Definition))
+    for row in results["definitions"]:
+        session.add(Definition(**row))
 
-        session.execute(delete(Interaction))
-        for row in results["interactions"]:
-            session.add(Interaction(**row))
+    session.execute(delete(Interaction))
+    for row in results["interactions"]:
+        session.add(Interaction(**row))
 
-        session.commit()
+    session.commit()

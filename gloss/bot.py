@@ -45,7 +45,7 @@ def make_bold(text):
     for line in newline_split:
         bold_line = line
         if line.strip() != "":
-            bold_line = "*{}*".format(line.strip())
+            bold_line = f"*{line.strip()}*"
         bold_split.append(bold_line)
 
     return "\n".join(bold_split)
@@ -170,7 +170,7 @@ class Bot:
             if period:
                 lines.append(
                     "{}{} {}".format(
-                        "{} ".format(prefix) if prefix else "",
+                        f"{prefix} " if prefix else "",
                         period,
                         singular if period == 1 else plural,
                     )

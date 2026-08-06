@@ -1,7 +1,6 @@
 from datetime import datetime
 
-import sqlalchemy.types as types
-from sqlalchemy import Column
+from sqlalchemy import Column, types
 from sqlalchemy.orm import declarative_base
 
 
@@ -33,7 +32,7 @@ class Definition(Base):
     user_name = Column(types.Unicode(255))
 
     def __repr__(self):
-        return "<Term: {}, Definition: {}>".format(self.term, self.definition)
+        return f"<Term: {self.term}, Definition: {self.definition}>"
 
 
 class Interaction(Base):
@@ -48,4 +47,4 @@ class Interaction(Base):
     action = Column(types.UnicodeText, index=True)
 
     def __repr__(self):
-        return "<Action: {}, Date: {}>".format(self.action, self.creation_date)
+        return f"<Action: {self.action}, Date: {self.creation_date}>"
