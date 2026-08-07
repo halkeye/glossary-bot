@@ -1,7 +1,7 @@
 import logging
 import random
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import distinct, func
 from thefuzz import process
@@ -369,7 +369,7 @@ class Bot:
                 entry.term = set_term
                 entry.definition = set_value
                 entry.user_name = user_name
-                entry.creation_date = datetime.datetime.now(tz=datetime.timezone.utc)
+                entry.creation_date = datetime.now(tz=timezone.utc)
 
                 self.session.add(entry)
                 self.session.commit()
