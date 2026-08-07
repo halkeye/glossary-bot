@@ -1,14 +1,14 @@
-import pytest
 from os import environ
-
 from unittest import TestCase
+
+import pytest
 from pytest_alembic import Config
 from pytest_mock_resources import create_postgres_fixture
 from sqlalchemy import create_engine
-
 from sqlalchemy.orm import Session, declarative_base
-from gloss.models import Definition, Interaction
+
 from gloss.bot import Bot
+from gloss.models import Definition, Interaction
 
 if environ.get("TEST_DATABASE_URL"):
 

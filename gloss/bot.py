@@ -45,7 +45,7 @@ def make_bold(text):
     for line in newline_split:
         bold_line = line
         if line.strip() != "":
-            bold_line = "*{}*".format(line.strip())
+            bold_line = f"*{line.strip()}*"
         bold_split.append(bold_line)
 
     return "\n".join(bold_split)
@@ -170,7 +170,7 @@ class Bot:
             if period:
                 lines.append(
                     "{}{} {}".format(
-                        "{} ".format(prefix) if prefix else "",
+                        f"{prefix} " if prefix else "",
                         period,
                         singular if period == 1 else plural,
                     )
@@ -238,7 +238,7 @@ class Bot:
             self.session.add(Interaction(term=term, user_name=user_name, action=action))
             self.session.commit()
         except Exception:
-            pass
+            logger.exception("Exception occurred")
 
     def query_definition(self, term):
         """Query the definition for a term from the database"""
@@ -369,7 +369,7 @@ class Bot:
                 entry.term = set_term
                 entry.definition = set_value
                 entry.user_name = user_name
-                entry.creation_date = datetime.utcnow()
+                entry.creation_date = datetime.datetime.now(tz=datetime.timezone.utc)
 
                 self.session.add(entry)
                 self.session.commit()
@@ -469,7 +469,7 @@ class Bot:
         if command_action in RECENT_CMDS:
             # extract parameters
             recent_args = parse_learnings_params(command_params)
-            learnings_plain_text, learnings_rich_text = self.get_learnings(
+            _learnings_plain_text, learnings_rich_text = self.get_learnings(
                 **recent_args
             )
             return learnings_rich_text

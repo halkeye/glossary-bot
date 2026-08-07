@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
 import json
 
 from gloss.models import Definition, Interaction
@@ -332,7 +331,7 @@ class TestBot:
         letters = ["K", "L", "M", "N", "Ó", "P", "Q", "R", "S", "T", "U", "V"]
         for letter in letters:
             handle_glossary(
-                text="{letter}W = {letter}ligibility Worker".format(letter=letter)
+                text=f"{letter}W = {letter}ligibility Worker"
             )
 
         robo_response = handle_glossary(text="learnings")
@@ -373,7 +372,7 @@ class TestBot:
         ]
         for letter in letters:
             handle_glossary(
-                text="{letter}W = {letter}ligibility Worker".format(letter=letter)
+                text=f"{letter}W = {letter}ligibility Worker"
             )
 
         # get chronological learnings
@@ -418,9 +417,9 @@ class TestBot:
         check = []
         for letter in letters:
             handle_glossary(
-                text="{letter}W = {letter}ligibility Worker".format(letter=letter)
+                text=f"{letter}W = {letter}ligibility Worker"
             )
-            check.insert(0, "{}W".format(letter))
+            check.insert(0, f"{letter}W")
 
         desc_check = check[:12]
         alpha_check = list(check)
@@ -429,11 +428,11 @@ class TestBot:
 
         # get chronological learnings
         robo_response = handle_glossary(text="learnings")
-        assert ", ".join(map(lambda str: f"*{str}*", desc_check)) in robo_response
+        assert ", ".join(f"*{str}*" for str in desc_check) in robo_response
 
         # get alphabetical learnings
         robo_response = handle_glossary(text="learnings alpha")
-        assert ", ".join(map(lambda str: f"*{str}*", alpha_check)) in robo_response
+        assert ", ".join(f"*{str}*" for str in alpha_check) in robo_response
 
     def test_random_offset_learnings(self, db_session, handle_glossary):
         """An offset group of learnings are returned randomized"""
@@ -457,7 +456,7 @@ class TestBot:
         ]
         for letter in letters:
             handle_glossary(
-                text="{letter}W = {letter}ligibility Worker".format(letter=letter)
+                text=f"{letter}W = {letter}ligibility Worker"
             )
 
         # get chronological learnings
@@ -517,29 +516,29 @@ class TestBot:
         check = []
         for letter in letters:
             handle_glossary(
-                text="{letter}W = {letter}ligibility Worker".format(letter=letter)
+                text=f"{letter}W = {letter}ligibility Worker"
             )
-            check.insert(0, "{}W".format(letter))
+            check.insert(0, f"{letter}W")
 
         # get all learnings
         robo_response = handle_glossary(text="learnings all")
-        assert ", ".join(map(lambda str: f"*{str}*", check)) in json.dumps(
+        assert ", ".join(f"*{str}*" for str in check) in json.dumps(
             robo_response
         )
 
         # if 'all' is part of the command, other limiting params are ignored
         robo_response = handle_glossary(text="learnings all 5")
-        assert ", ".join(map(lambda str: f"*{str}*", check)) in json.dumps(
+        assert ", ".join(f"*{str}*" for str in check) in json.dumps(
             robo_response
         )
 
         robo_response = handle_glossary(text="learnings 5 3 all")
-        assert ", ".join(map(lambda str: f"*{str}*", check)) in json.dumps(
+        assert ", ".join(f"*{str}*" for str in check) in json.dumps(
             robo_response
         )
 
         robo_response = handle_glossary(text="learnings all 3 5")
-        assert ", ".join(map(lambda str: f"*{str}*", check)) in json.dumps(
+        assert ", ".join(f"*{str}*" for str in check) in json.dumps(
             robo_response
         )
 
@@ -570,15 +569,15 @@ class TestBot:
         ]
         for letter in letters:
             handle_glossary(
-                text="{letter}W = {letter}ligibility Worker".format(letter=letter)
+                text=f"{letter}W = {letter}ligibility Worker"
             )
 
         limit = 7
-        check = ["{}W".format(item) for item in list(reversed(letters[-limit:]))]
+        check = [f"{item}W" for item in list(reversed(letters[-limit:]))]
 
         # get some learnings
-        robo_response = handle_glossary(text="learnings {}".format(limit))
-        assert ", ".join(map(lambda str: f"*{str}*", check)) in json.dumps(
+        robo_response = handle_glossary(text=f"learnings {limit}")
+        assert ", ".join(f"*{str}*" for str in check) in json.dumps(
             robo_response
         )
 
@@ -609,19 +608,19 @@ class TestBot:
         ]
         for letter in letters:
             handle_glossary(
-                text="{letter}W = {letter}ligibility Worker".format(letter=letter)
+                text=f"{letter}W = {letter}ligibility Worker"
             )
 
         limit = 7
         offset = 11
         check = [
-            "{}W".format(item)
+            f"{item}W"
             for item in list(reversed(letters[-(limit + offset) : -offset]))
         ]
 
         # get some learnings
-        robo_response = handle_glossary(text="learnings {} {}".format(limit, offset))
-        assert ", ".join(map(lambda str: f"*{str}*", check)) in json.dumps(
+        robo_response = handle_glossary(text=f"learnings {limit} {offset}")
+        assert ", ".join(f"*{str}*" for str in check) in json.dumps(
             robo_response
         )
 

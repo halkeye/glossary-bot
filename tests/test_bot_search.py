@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
 import random
 
 
@@ -21,11 +20,11 @@ class TestBotSearch:
         randomized_matches = list(matches)
         random.shuffle(randomized_matches)
         for post_match in randomized_matches:
-            handle_glossary(text="{} = {}".format(post_match[0], post_match[1]))
+            handle_glossary(text=f"{post_match[0]} = {post_match[1]}")
 
         # request a definition that doesn't exist, but that will generate suggestions
         robo_response = handle_glossary(text="gloss")
-        match_text = ", ".join(["*{}*".format(item[0]) for item in matches])
+        match_text = ", ".join([f"*{item[0]}*" for item in matches])
         assert match_text in robo_response
 
     def test_search_results(self, handle_glossary):
@@ -57,7 +56,7 @@ class TestBotSearch:
         randomized_matches = list(matches)
         random.shuffle(randomized_matches)
         for post_match in randomized_matches:
-            handle_glossary(text="{} = {}".format(post_match[0], post_match[1]))
+            handle_glossary(text=f"{post_match[0]} = {post_match[1]}")
 
         # make some searches and verify that they come back as expected
         robo_response = handle_glossary(text="search youth")

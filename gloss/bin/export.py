@@ -22,29 +22,28 @@ database_url = database_url.replace("ssl-mode=", "ssl_mode=", 1)
 engine = create_engine(database_url)
 
 results = {"definitions": [], "interactions": []}
-with engine.connect() as conn:
-    with Session(engine) as session:
-        for row in session.query(Definition).order_by(Definition.creation_date.desc()).all():
-            results["definitions"].append(
-                {
-                    "id": row.id,
-                    "creation_date": row.creation_date.isoformat(),
-                    "term": row.term,
-                    "definition": row.definition,
-                    "user_name": row.user_name,
-                }
-            )
+with engine.connect() as conn, Session(engine) as session:
+    for row in session.query(Definition).order_by(Definition.creation_date.desc()).all():
+        results["definitions"].append(
+            {
+                "id": row.id,
+                "creation_date": row.creation_date.isoformat(),
+                "term": row.term,
+                "definition": row.definition,
+                "user_name": row.user_name,
+            }
+        )
 
-        for row in session.query(Interaction).order_by(Interaction.creation_date.desc()).all():
-            results["interactions"].append(
-                {
-                    "id": row.id,
-                    "creation_date": row.creation_date.isoformat(),
-                    "user_name": row.user_name,
-                    "term": row.term,
-                    "action": row.action,
-                }
-            )
+    for row in session.query(Interaction).order_by(Interaction.creation_date.desc()).all():
+        results["interactions"].append(
+            {
+                "id": row.id,
+                "creation_date": row.creation_date.isoformat(),
+                "user_name": row.user_name,
+                "term": row.term,
+                "action": row.action,
+            }
+        )
 
 
 print(json.dumps(results, indent=2))
