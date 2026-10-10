@@ -57,12 +57,12 @@ dev = [
 test = [
   "responses==0.26.3",
   "flake8==7.4.1",
-  "black==26.5.1",
-  "pytest_alembic==0.12.1",
+  "black==26.10.1",
+  "pytest_alembic==0.13.1",
   "pytest==9.1.1",
-  "pytest-mock-resources==2.13.0",
+  "pytest-mock-resources==2.15.0",
   "python_on_whales==0.81.0",
-  "ruff==0.16.8"
+  "ruff==0.17.0"
 ]
 
 [tool.setuptools.dynamic]
