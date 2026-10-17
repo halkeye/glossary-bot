@@ -17,7 +17,7 @@ database_url = os.environ["DATABASE_URL"]
 # SQLAlchemy no longer recognizes postgres:// URLs as "postgresql"
 # https://github.com/sqlalchemy/sqlalchemy/issues/6083
 if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
+    database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
 database_url = database_url.replace("ssl-mode=", "ssl_mode=", 1)
 
 engine = create_engine(database_url)
