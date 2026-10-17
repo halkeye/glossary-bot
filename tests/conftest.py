@@ -23,9 +23,9 @@ else:
 def alembic_engine(pg):
     """Override this fixture to provide pytest-alembic powered tests with a database handle."""
     if environ.get("TEST_DATABASE_URL"):
-        db_url = environ.get("TEST_DATABASE_URL", "postgresql:///glossary-bot-test")
+        db_url = environ.get("TEST_DATABASE_URL", "postgresql+psycopg2:///glossary-bot-test")
         if db_url.startswith("postgres://"):
-            db_url = db_url.replace("postgres://", "postgresql://", 1)
+            db_url = db_url.replace("postgres://", "postgresql+psycopg2://", 1)
         environ["DATABASE_URL"] = db_url
         return create_engine(db_url)
     return pg
