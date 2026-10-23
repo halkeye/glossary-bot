@@ -35,7 +35,7 @@ maintainers = [
 ]
 dependencies = [
   "gunicorn==26.2.0",
-  "alembic==1.20.0",
+  "alembic==1.20.1",
   "psycopg2-binary==2.9.13",
   "mysqlclient==2.3.0",
   "slack-bolt==1.30.0",
@@ -50,7 +50,7 @@ changelog = "https://github.com/halkeye/glossary-botblob/master/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
-  "bump-my-version==1.6.1",
+  "bump-my-version==1.6.3",
   "generate-changelog==0.17.0"
 ]
 
@@ -62,7 +62,7 @@ test = [
   "pytest==9.1.1",
   "pytest-mock-resources==2.15.0",
   "python_on_whales==0.81.0",
-  "ruff==0.17.1"
+  "ruff==0.17.2"
 ]
 
 [tool.setuptools.dynamic]
