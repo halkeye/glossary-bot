@@ -4,6 +4,7 @@ from os import environ
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
+from gloss.db import normalize_database_url
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -15,8 +16,10 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-if environ.get("DATABASE_URL") != "":
-    config.set_main_option("sqlalchemy.url", environ["DATABASE_URL"])
+if environ.get("DATABASE_URL"):
+    config.set_main_option(
+        "sqlalchemy.url", normalize_database_url(environ["DATABASE_URL"])
+    )
 
 # add your model's MetaData object here
 # for 'autogenerate' support

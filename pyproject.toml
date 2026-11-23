@@ -1,7 +1,7 @@
 [project]
 name = "glossary-bot"
 description = "Glossary Slack Bot"
-requires-python = ">=3"
+requires-python = ">=3.11"
 dynamic = ["version", "readme"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -9,8 +9,11 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Topic :: Communications :: Chat",
@@ -36,11 +39,14 @@ maintainers = [
 dependencies = [
   "gunicorn==26.2.0",
   "alembic==1.20.1",
+  "mcp==2.3.0",
   "psycopg2-binary==2.9.13",
   "mysqlclient==2.3.0",
   "slack-bolt==1.30.0",
+  "starlette==1.10.0",
   "thefuzz==0.22.1",
   "thefuzz[speedup]==0.22.1",
+  "uvicorn==0.54.0",
 ]
 
 [project.urls]
@@ -70,8 +76,8 @@ version = {attr = "gloss.__version__"}
 readme = {file = "README.md"}
 
 [tool.setuptools.packages.find]
-# All the following settings are optional:
-where = ["gloss"]  # ["."] by default
+where = ["."]
+include = ["gloss*"]
 
 [tool.black]
 line-length = 125

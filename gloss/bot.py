@@ -135,31 +135,37 @@ class Bot:
         payload_values["icon_emoji"] = BOT_EMOJI
         return payload_values
 
+    def get_stats_values(self):
+        """Return glossary and interaction counts as a dict."""
+        terms = self.session.query(func.count(Definition.term)).scalar() or 0
+        definers = (
+            self.session.query(func.count(distinct(Definition.user_name))).scalar()
+            or 0
+        )
+        lookups = self.session.query(func.count(Interaction.action)).scalar() or 0
+        return {"terms": terms, "definers": definers, "lookups": lookups}
+
     def get_stats(self):
         """Gather and return some statistics"""
-        entries = self.session.query(func.count(Definition.term)).scalar()
-        definers = self.session.query(
-            func.count(distinct(Definition.user_name))
-        ).scalar()
-        queries = self.session.query(func.count(Interaction.action)).scalar()
+        values = self.get_stats_values()
         outputs = (
             (
                 "I have definitions for",
-                entries,
+                values["terms"],
                 "term",
                 "terms",
                 "I don't have any definitions",
             ),
             (
                 "",
-                definers,
+                values["definers"],
                 "person has defined terms",
                 "people have defined terms",
                 "Nobody has defined terms",
             ),
             (
                 "I've been asked for definitions",
-                queries,
+                values["lookups"],
                 "time",
                 "times",
                 "Nobody has asked me for definitions",

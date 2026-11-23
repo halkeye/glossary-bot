@@ -7,20 +7,13 @@ from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 from slack_bolt.authorization import AuthorizeResult
 from slack_sdk.web.client import WebClient
-from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from gloss.bot import Bot
+from gloss.db import make_engine
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-database_url = os.environ["DATABASE_URL"]
-# SQLAlchemy no longer recognizes postgres:// URLs as "postgresql"
-# https://github.com/sqlalchemy/sqlalchemy/issues/6083
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
-database_url = database_url.replace("ssl-mode=", "ssl_mode=", 1)
 
 
 def authorize(enterprise_id, team_id, user_id, client: WebClient, logger):
@@ -41,7 +34,7 @@ app = App(
     authorize=authorize,
 )
 
-engine = create_engine(database_url, echo=False, pool_recycle=3600, pool_pre_ping=True)
+engine = make_engine()
 
 
 @app.command(os.getenv("SLASH_COMMAND", "/glossary"))

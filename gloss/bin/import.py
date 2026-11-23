@@ -2,25 +2,18 @@
 
 import json
 import logging
-import os
 import sys
 
-from sqlalchemy import create_engine, delete
+from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
+from ..db import make_engine
 from ..models import Definition, Interaction
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-database_url = os.environ["DATABASE_URL"]
-# SQLAlchemy no longer recognizes postgres:// URLs as "postgresql"
-# https://github.com/sqlalchemy/sqlalchemy/issues/6083
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
-database_url = database_url.replace("ssl-mode=", "ssl_mode=", 1)
-
-engine = create_engine(database_url)
+engine = make_engine()
 
 results = json.load(sys.stdin)
 

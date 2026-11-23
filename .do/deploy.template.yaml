@@ -28,5 +28,35 @@ spec:
         - key: DATABASE_URL
           scope: RUN_TIME
           value: ${glossary-bot-db.DATABASE_URL}
+  services:
+    - name: glossary-mcp
+      environment_slug: python
+      build_command: pip install .
+      run_command: python -m gloss.mcp_server
+      source_dir: /
+      http_port: 8080
+      instance_count: 1
+      health_check:
+        http_path: /healthz
+        initial_delay_seconds: 20
+        period_seconds: 10
+      github:
+        branch: master
+        deploy_on_push: true
+        repo: halkeye/glossary-bot
+      envs:
+        - key: DATABASE_URL
+          scope: RUN_TIME
+          value: ${glossary-bot-db.DATABASE_PRIVATE_URL}
+        - key: MCP_AUTH_TOKEN
+          scope: RUN_TIME
+          value: ""  # required: openssl rand -hex 32
+          type: SECRET
+        - key: MCP_ALLOWED_HOSTS
+          scope: RUN_TIME
+          value: ""  # required: generated <app>.ondigitalocean.app hostname
+        - key: MCP_ALLOWED_ORIGINS
+          scope: RUN_TIME
+          value: ""  # optional: browser MCP client origins
   databases:
     - name: glossary-bot-db
